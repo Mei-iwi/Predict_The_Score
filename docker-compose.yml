@@ -63,3 +63,9 @@ volumes:
 # Web: http://localhost:8080
 # FastAPI docs: http://localhost:8000/docs
 # MySQL: localhost:3306
+
+#User: root
+#Password: root_password
+
+# User: predict_user
+# Password: predict_password
