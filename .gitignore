@@ -1,0 +1,117 @@
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# =========================
+# Python
+# =========================
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.python-version
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# =========================
+# FastAPI / Logs
+# =========================
+*.log
+logs/
+uvicorn.log
+
+# =========================
+# ML artifacts
+# =========================
+ml-service/artifacts/*
+!ml-service/artifacts/.gitkeep
+*.pkl
+*.joblib
+
+# =========================
+# Data files sinh ra trong quá trình xử lý
+# =========================
+data/interim/*
+!data/interim/.gitkeep
+
+data/processed/*
+!data/processed/.gitkeep
+
+# Nếu không muốn đẩy dữ liệu raw lớn, bỏ comment dòng dưới
+# data/raw/*
+
+# Giữ lại sample input
+# data/samples/*
+
+# =========================
+# Reports sinh tự động
+# =========================
+reports/figures/*
+!reports/figures/.gitkeep
+
+reports/tables/*
+!reports/tables/.gitkeep
+
+reports/exports/*
+!reports/exports/.gitkeep
+
+# =========================
+# .NET / ASP.NET Core
+# =========================
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Publish output
+publish/
+app.publish/
+
+# Rider / VS
+_ReSharper*/
+*.DotSettings.user
+
+# =========================
+# Node / front-end tools (nếu có dùng thêm)
+# =========================
+node_modules/
+dist/
+build/
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# =========================
+# Environment / secrets
+# =========================
+.env
+.env.*
+secrets.json
+
+# =========================
+# Keep important placeholders
+# =========================
+!data/raw/.gitkeep
+!data/samples/.gitkeep
+!database/migrations/.gitkeep
