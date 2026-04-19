@@ -1,0 +1,65 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: predict-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: predict_the_score
+      MYSQL_USER: predict_user
+      MYSQL_PASSWORD: predict_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: predict-ml-service
+    restart: unless-stopped
+    environment:
+      MODEL_PATH: /app/artifacts/model.joblib
+    ports:
+      - "8000:8000"
+
+  webapp:
+    build:
+      context: ./webapp/PredictTheScore.Web
+      dockerfile: Dockerfile
+    container_name: predict-webapp
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      ml-service:
+        condition: service_started
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=predict_the_score;User=predict_user;Password=predict_password;SslMode=None;"
+      MlApi__BaseUrl: "http://ml-service:8000"
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:
+
+
+# docker compose up --build
+# Chạy nền
+# docker compose up --build -d
+# Dừng
+# docker compose down
+# Dừng và xóa volume
+# docker compose down -v
+
+# Web: http://localhost:8080
+# FastAPI docs: http://localhost:8000/docs
+# MySQL: localhost:3306
