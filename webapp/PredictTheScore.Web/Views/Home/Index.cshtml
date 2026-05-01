@@ -1,16 +1,18 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+  ViewData["Title"] = "Home Page";
 }
 
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hệ thống dự đoán điểm số học sinh</title>
-<link rel="stylesheet" href="~/css/styles.css" />
-<script src="~/js/script.js" defer></script>
+  <link rel="stylesheet" href="~/css/styles.css" />
+  <script src="~/js/script.js" defer></script>
 </head>
+
 <body>
   <header class="hero">
     <div class="container hero-inner">
@@ -88,26 +90,44 @@
             </div>
 
             <div class="field-group">
-              <label for="g1">Điểm giai đoạn 1 (G1)</label>
-              <input type="number" id="g1" name="g1" min="0" max="20" step="1" placeholder="12" />
-              <small class="error-text" id="g1Error"></small>
-            </div>
-
-            <div class="field-group">
-              <label for="g2">Điểm giai đoạn 2 (G2)</label>
-              <input type="number" id="g2" name="g2" min="0" max="20" step="1" placeholder="14" />
-              <small class="error-text" id="g2Error"></small>
-            </div>
-
-            <div class="field-group">
               <label for="failures">Số lần chưa đạt trước đó</label>
               <input type="number" id="failures" name="failures" min="0" max="10" step="1" placeholder="0" />
               <small class="error-text" id="failuresError"></small>
             </div>
+            <div class="field-group">
+              <label for="schoolsup">Hỗ trợ từ nhà trường</label>
+              <select id="schoolsup" name="schoolsup">
+                <option value="">Chọn trạng thái hỗ trợ</option>
+                <option value="1">Có</option>
+                <option value="0">Không</option>
+              </select>
+              <small class="error-text" id="schoolsupError"></small>
+            </div>
+
+            <div class="field-group">
+              <label for="famsup">Hỗ trợ từ gia đình</label>
+              <select id="famsup" name="famsup">
+                <option value="">Chọn trạng thái hỗ trợ</option>
+                <option value="1">Có</option>
+                <option value="0">Không</option>
+              </select>
+              <small class="error-text" id="famsupError"></small>
+            </div>
+
+            <div class="field-group">
+              <label for="internet">Có Internet tại nhà</label>
+              <select id="internet" name="internet">
+                <option value="">Chọn tình trạng Internet</option>
+                <option value="1">Có</option>
+                <option value="0">Không</option>
+              </select>
+              <small class="error-text" id="internetError"></small>
+            </div>
 
             <div class="field-group field-group-full">
               <label for="note">Ghi chú</label>
-              <textarea id="note" name="note" rows="4" placeholder="Thông tin thêm về tình hình học tập nếu cần"></textarea>
+              <textarea id="note" name="note" rows="4"
+                        placeholder="Thông tin thêm về tình hình học tập nếu cần"></textarea>
             </div>
           </div>
 
@@ -143,7 +163,8 @@
 
             <div class="summary-box">
               <h3>Khuyến nghị</h3>
-              <p id="feedbackText">Hệ thống sẽ hiển thị nhận xét sau khi nhận phản hồi thành công từ dịch vụ dự đoán.</p>
+              <p id="feedbackText">Hệ thống sẽ hiển thị nhận xét sau khi nhận phản hồi thành công từ dịch vụ dự đoán.
+              </p>
             </div>
           </div>
         </div>
@@ -155,9 +176,10 @@
             <div class="summary-item"><span>Lớp</span><strong id="summaryClass">--</strong></div>
             <div class="summary-item"><span>studytime</span><strong id="summaryStudyTime">--</strong></div>
             <div class="summary-item"><span>absences</span><strong id="summaryAbsences">--</strong></div>
-            <div class="summary-item"><span>G1</span><strong id="summaryG1">--</strong></div>
-            <div class="summary-item"><span>G2</span><strong id="summaryG2">--</strong></div>
             <div class="summary-item"><span>failures</span><strong id="summaryFailures">--</strong></div>
+            <div class="summary-item"><span>schoolsup</span><strong id="summarySchoolsup">--</strong></div>
+            <div class="summary-item"><span>famsup</span><strong id="summaryFamsup">--</strong></div>
+            <div class="summary-item"><span>internet</span><strong id="summaryInternet">--</strong></div>
             <div class="summary-item"><span>Yêu cầu lúc</span><strong id="summaryRequestedAt">--</strong></div>
           </div>
         </div>
@@ -198,45 +220,48 @@
         </div>
         <div class="json-box">
           <pre id="payloadPreview">{
-  "studytime": null,
-  "absences": null,
-  "G1": null,
-  "G2": null,
-  "failures": null
-}</pre>
+            "studytime": null,
+            "absences": null,
+            "failures": null,
+            "schoolsup": null,
+            "famsup": null,
+            "internet": null
+            }</pre>
+          </div>
+        </section>
+      </section>
+
+      <section class="card panel-card history-card" id="history-section">
+        <div class="card-head">
+          <div>
+            <h2>Lịch sử dự đoán gần đây</h2>
+            <p>Lưu tạm trên trình duyệt để tiện theo dõi khi demo và kiểm thử</p>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Thời gian</th>
+                <th>Học sinh</th>
+                <th>Lớp</th>
+                <th>studytime</th>
+                <th>schoolsup</th>
+                <th>famsup</th>
+                <th>internet</th>
+                <th>Dự đoán</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody">
+              <tr class="empty-row">
+                <td colspan="8">Chưa có lần dự đoán nào.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
-    </section>
+    </main>
+  </body>
 
-    <section class="card panel-card history-card" id="history-section">
-      <div class="card-head">
-        <div>
-          <h2>Lịch sử dự đoán gần đây</h2>
-          <p>Lưu tạm trên trình duyệt để tiện theo dõi khi demo và kiểm thử</p>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Thời gian</th>
-              <th>Học sinh</th>
-              <th>Lớp</th>
-              <th>studytime</th>
-              <th>G1</th>
-              <th>G2</th>
-              <th>Dự đoán</th>
-            </tr>
-          </thead>
-          <tbody id="historyBody">
-            <tr class="empty-row">
-              <td colspan="7">Chưa có lần dự đoán nào.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
-</body>
 </html>
