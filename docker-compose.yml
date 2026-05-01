@@ -44,13 +44,14 @@ services:
     environment:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=predict_the_score;User=predict_user;Password=predict_password;SslMode=None;"
-      MlApi__BaseUrl: "http://ml-service:8000"
+      MlService__BaseUrl: "http://ml-service:8000"
+      MlService__PredictEndpoint: "/predict"
+      MlService__TimeoutSeconds: "15"
     ports:
       - "8080:8080"
 
 volumes:
   mysql_data:
-
 
 # docker compose up --build
 # Chạy nền

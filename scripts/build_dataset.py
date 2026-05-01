@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from zipfile import ZipFile
+from io import BytesIO
+from pathlib import Path, PurePosixPath
+from zipfile import BadZipFile, ZipFile
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -48,10 +49,50 @@ VALID_RANGES: dict[str, tuple[int, int]] = {
 }
 
 
+def basename_in_zip(member_name: str) -> str:
+    return PurePosixPath(member_name).name
+
+
+def find_file_bytes_in_zip_bytes(zip_bytes: bytes, expected_name: str) -> bytes:
+    """
+    Tìm expected_name trong zip, kể cả zip lồng zip.
+    Ví dụ:
+    - student-mat.csv
+    - student/student-mat.csv
+    - outer.zip -> student.zip -> student-mat.csv
+    """
+    with ZipFile(BytesIO(zip_bytes), "r") as archive:
+        names = archive.namelist()
+
+        # 1. Tìm trực tiếp theo basename
+        for name in names:
+            if name.endswith("/"):
+                continue
+
+            if basename_in_zip(name) == expected_name:
+                return archive.read(name)
+
+        # 2. Tìm trong zip con
+        for name in names:
+            if name.endswith("/"):
+                continue
+
+            data = archive.read(name)
+
+            if not data.startswith(b"PK"):
+                continue
+
+            try:
+                return find_file_bytes_in_zip_bytes(data, expected_name)
+            except (BadZipFile, KeyError):
+                continue
+
+    raise KeyError(f"Không tìm thấy '{expected_name}' trong zip.")
+
+
 def load_csv_from_zip(zip_path: Path, member_name: str) -> pd.DataFrame:
-    with ZipFile(zip_path) as archive:
-        with archive.open(member_name) as fp:
-            return pd.read_csv(fp, sep=";")
+    file_bytes = find_file_bytes_in_zip_bytes(zip_path.read_bytes(), member_name)
+    return pd.read_csv(BytesIO(file_bytes), sep=";")
 
 
 def find_raw_sources() -> tuple[pd.DataFrame, pd.DataFrame, str]:
@@ -75,9 +116,9 @@ def find_raw_sources() -> tuple[pd.DataFrame, pd.DataFrame, str]:
             return mat, por, label
 
     zip_candidates = [
+        DATA_RAW_DIR / "student.zip",
         PROJECT_ROOT / "student.zip",
         PROJECT_ROOT / "student_performance.zip",
-        DATA_RAW_DIR / "student.zip",
     ]
     for zip_path in zip_candidates:
         if zip_path.exists():
@@ -226,8 +267,8 @@ def save_outputs(df_clean: pd.DataFrame, pearson_corr: pd.DataFrame, audit: dict
     plt.figure(figsize=(10, 8))
     image = plt.imshow(pearson_corr, interpolation="nearest")
     plt.colorbar(image)
-    plt.xticks(range(len(pearson_corr.columns)), pearson_corr.columns, rotation=45, ha="right")
-    plt.yticks(range(len(pearson_corr.index)), pearson_corr.index)
+    plt.xticks(range(len(pearson_corr.columns)), pearson_corr.columns, rotation=45, ha="right") # type: ignore
+    plt.yticks(range(len(pearson_corr.index)), pearson_corr.index) # type: ignore
     plt.title("Heatmap tương quan Pearson")
     plt.tight_layout()
     plt.savefig(FIG_DIR / "pearson_heatmap.png", dpi=300, bbox_inches="tight")

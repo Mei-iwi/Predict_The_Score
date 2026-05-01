@@ -20,18 +20,18 @@ public class PredictionInputModel
 
     [JsonPropertyName("failures")]
     [Required(ErrorMessage = "Vui lòng nhập số lần chưa đạt")]
-    [Range(0, 10, ErrorMessage = "Failures phải từ 0 đến 10")]
+    [Range(0, 4, ErrorMessage = "Failures phải từ 0 đến 4")]
     public int Failures { get; set; }
 
 
     [JsonPropertyName("absences")]
     [Required(ErrorMessage = "Vui lòng nhập số buổi vắng")]
-    [Range(0, 100, ErrorMessage = "Absences phải từ 0 đến 100")]
+    [Range(0, 93, ErrorMessage = "Absences phải từ 0 đến 93")]
     public int Absences { get; set; }
 
     [JsonPropertyName("schoolsup")]
     [Required(ErrorMessage = "Vui lòng chọn hỗ trợ từ nhà trường")]
-    [Range(0, 1, ErrorMessage = "Schoolsup chỉ nhận o hoặc 1")]
+    [Range(0, 1, ErrorMessage = "Schoolsup chỉ nhận 0 hoặc 1")]
     public int Schoolsup { get; set; }
 
 
@@ -43,7 +43,7 @@ public class PredictionInputModel
 
     [JsonPropertyName("internet")]
     [Required(ErrorMessage = "Vui lòng chọn tình trạng Internet")]
-    [Range(0, 100, ErrorMessage = "Internet chỉ nhật 0 hoặc 1")]
+    [Range(0, 1, ErrorMessage = "Internet chỉ nhật 0 hoặc 1")]
     public int Internet { get; set; }
 
 

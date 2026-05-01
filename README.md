@@ -21,6 +21,85 @@
 
 ## Khởi động dự án
 
+### Cài môi trường ảo và thư viện
+
+Mở git bash hoặc terminal trong dự án
+
+Di chuyển vào backend ml-service
+
+```bash
+cd ml-service
+```
+
+Kích hoạt môi trường ảo: -> Chỉ chạy cho lần đầu
+
+```bash 
+python -m venv .venv
+```
+
+Cài đặt thư viện cần thiết: -> Chỉ chạy cho lần đầu
+
+```bash
+source .venv/Scripts/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+### Dữ liệu và tiền xử lý dữ liệu
+
+Tải dữ liệu student Performance từ UCI, lưu vào data/raw/student.zip, kiểm tra và giải nén dữ liệu gốc
+
+```bash
+python scripts/download_data.py
+```
+
+Đọc student-mat.csv, student-por.csv, chọn cột, mã hóa yes/no thành 1/0, làm sạch dữ liệu, tạo student_performance_clean.csv, feature_config.json, audit và biểu đồ Pearson
+
+```bash
+python scripts/build_dataset.py 
+```
+
+Đọc dữ liệu sạch, lấy scenario web_minimal, train mô hình LinearRegression, lưu model vào ml-service/artifacts/model.joblib, lưu metrics
+
+```bash
+python scripts/train_model.py 
+```
+Nạp lại model.joblib, đánh giá model trên test set, tạo file evaluation và hình actual_vs_predicted
+
+```bash
+python scripts/evaluate_model.py
+```
+
+Tạo dữ liệu mẫu sample_input.csv và sample_input.json theo schema web hiện tại
+
+```bash
+python scripts/export_sample_input.py 
+```
+
+### Khởi động và tạo CSDL (mysql bằng docker)
+
+Chạy docker
+```bash
+docker compose up --build
+```
+
+Ngắt docker (-v xóa ổ đĩa lưu trữ)
+```bash
+docker compose down -v
+```
+
+Sử dụng một trình giao diện (wordbench, xml, ...) để truy cập csdl trực quan
+```bash
+hosetname: 127.0.0.1 
+port: 3306
+User: root
+Password: root_password
+
+User: predict_user
+Password: predict_password
+```
+
+
 > Chạy **Backend trước**, sau đó mới chạy **Frontend**.
 
 ### 1) Backend - FastAPI
@@ -28,20 +107,7 @@
 Di chuyển tới thư mục `ml-service`:
 
 ```bash
-cd /d/StudyMaterials/HK6/DataMining/Groups/Project/Predict_the_score/ml-service
-```
-
-Kích hoạt môi trường ảo: -> Chỉ chạy cho lần đầu
-
-```bash 
-source .venv/Scripts/activate
-```
-
-Cài đặt thư viện cần thiết: -> Chỉ chạy cho lần đầu
-
-```bash
-python -m pip install --upgrade pip
-pip install fastapi "uvicorn[standard]" pydantic scikit-learn pandas joblib
+cd ml-service
 ```
 
 Chạy backend:
@@ -62,7 +128,7 @@ Sau khi chạy thành công:
 Di chuyển tới thư mục project web:
 
 ```bash
-cd /d/StudyMaterials/HK6/DataMining/Groups/Project/Predict_the_score/webapp/PredictTheScore.Web
+cd PredictTheScore.Web
 ```
 
 Chạy dự án:
