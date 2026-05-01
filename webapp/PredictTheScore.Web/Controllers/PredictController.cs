@@ -9,11 +9,13 @@ public class PredictController : Controller
 {
     private readonly IMlApiClient _mlApiClient;
     private readonly ILogger<PredictController> _logger;
+    private readonly IPredictionHistoryService _historyService;
 
-    public PredictController(IMlApiClient mlApiClient, ILogger<PredictController> logger)
+    public PredictController(IMlApiClient mlApiClient, ILogger<PredictController> logger, IPredictionHistoryService historyService)
     {
         _mlApiClient = mlApiClient;
         _logger = logger;
+        _historyService = historyService;
     }
     [HttpPost("Submit")]
     public async Task<IActionResult> Submit([FromBody] PredictionInputModel input, CancellationToken cancellationToken)
@@ -36,6 +38,7 @@ public class PredictController : Controller
         try
         {
             var prediction = await _mlApiClient.PredictAsync(mlRequest, cancellationToken);
+            await _historyService.SaveAsync(input, mlRequest, prediction, cancellationToken);
 
             return Ok(new
             {
@@ -58,4 +61,32 @@ public class PredictController : Controller
 
 
     }
+    [HttpGet("History")]
+    public async Task<IActionResult> History(
+       [FromQuery] int take = 10,
+       CancellationToken cancellationToken = default)
+    {
+        var histories = await _historyService.GetLatestAsync(take, cancellationToken);
+
+        var result = histories.Select(x => new
+        {
+            id = x.Id,
+            student_name = x.StudentName,
+            class_name = x.ClassName,
+            studytime = x.StudyTime,
+            failures = x.Failures,
+            absences = x.Absences,
+            schoolsup = x.SchoolSup,
+            famsup = x.FamSup,
+            internet = x.Internet,
+            note = x.Note,
+            predicted_score = x.PredictedScore,
+            predicted_score_10 = Math.Round((double)x.PredictedScore / 2, 2),
+            model_name = x.ModelName,
+            created_at = x.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")
+        });
+
+        return Ok(result);
+    }
+
 }

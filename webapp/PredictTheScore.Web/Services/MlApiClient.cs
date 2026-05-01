@@ -15,7 +15,7 @@ public class MlApiClient : IMlApiClient
     }
 
 
-    public async Task<PredictionReponseDto> PredictAsync(PredictionRequestDto request, CancellationToken cancellationToken = default)
+    public async Task<PredictionResponseDto> PredictAsync(PredictionRequestDto request, CancellationToken cancellationToken = default)
     {
         var endpoint = _configuration["MlService:PredictEndpoint"] ?? "/predict";
         try
@@ -29,7 +29,7 @@ public class MlApiClient : IMlApiClient
                 _logger.LogWarning("ML API returned error, StatusCode={StatusCode}, Body={Body}", respone.StatusCode, rawBody);
                 throw new InvalidOperationException($"ML API lỗi với mã trạng thái {(int)respone.StatusCode}");
             }
-            var result = await respone.Content.ReadFromJsonAsync<PredictionReponseDto>(cancellationToken: cancellationToken);
+            var result = await respone.Content.ReadFromJsonAsync<PredictionResponseDto>(cancellationToken: cancellationToken);
             if (result == null)
             {
                 throw new InvalidOperationException("ML API trả về dữ liệu rống");

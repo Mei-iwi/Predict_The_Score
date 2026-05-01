@@ -5,6 +5,53 @@ const APP_CONFIG = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  async function loadHistoryFromDatabase() {
+    if (!historyBody) return;
+
+    try {
+      const response = await fetch('/Predict/History?take=10');
+
+      if (!response.ok) {
+        throw new Error(`Không tải được lịch sử, mã lỗi ${response.status}`);
+      }
+
+      const histories = await response.json();
+
+      renderHistoryFromDatabase(histories);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function renderHistoryFromDatabase(histories) {
+    historyBody.innerHTML = '';
+
+    if (!histories || histories.length === 0) {
+      historyBody.innerHTML = `
+      <tr class="empty-row">
+        <td colspan="8">Chưa có lần dự đoán nào.</td>
+      </tr>
+    `;
+      return;
+    }
+
+    histories.forEach(item => {
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+  <td>${escapeHtml(item.created_at)}</td>
+  <td>${escapeHtml(item.student_name || '--')}</td>
+  <td>${escapeHtml(item.class_name || '--')}</td>
+  <td>${escapeHtml(item.studytime)}</td>
+  <td>${item.schoolsup === 1 ? 'Có' : 'Không'}</td>
+  <td>${item.famsup === 1 ? 'Có' : 'Không'}</td>
+  <td>${item.internet === 1 ? 'Có' : 'Không'}</td>
+  <td>${Number(item.predicted_score).toFixed(2)}</td>
+`;
+
+      historyBody.appendChild(row);
+    });
+  }
   const form = document.getElementById('prediction-form');
   const resetBtn = document.getElementById('resetBtn');
   const submitBtn = document.getElementById('submitBtn');
@@ -32,12 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
     absences: {
       input: document.getElementById('absences'),
       error: document.getElementById('absencesError'),
-      validate: (value) => validateIntegerRange(value, 0, 100, 'Số buổi vắng học')
+      validate: (value) => validateIntegerRange(value, 0, 93, 'Số buổi vắng học')
     },
     failures: {
       input: document.getElementById('failures'),
       error: document.getElementById('failuresError'),
-      validate: (value) => validateIntegerRange(value, 0, 10, 'Số lần chưa đạt')
+      validate: (value) => validateIntegerRange(value, 0, 4, 'Số lần chưa đạt')
     },
     schoolsup: {
       input: document.getElementById('schoolsup'),
@@ -90,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   initializeConfig();
+  loadHistoryFromDatabase();
 
   form.addEventListener('submit', handleSubmit);
   resetBtn.addEventListener('click', handleReset);
@@ -385,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const normalized = normalizeResponse(data, payload);
       updateResult(payload, normalized);
       appendHistory(payload, normalized);
+      await loadHistoryFromDatabase();
       setUiState('success', 'Nhận kết quả dự đoán thành công.');
       document.getElementById('result-section')?.scrollIntoView({
         behavior: 'smooth',
