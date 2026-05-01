@@ -9,7 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const resetBtn = document.getElementById('resetBtn');
   const submitBtn = document.getElementById('submitBtn');
   const historyBody = document.getElementById('historyBody');
-
+  if (!form || !resetBtn || !submitBtn || !historyBody) {
+    console.warn('Trang hiện tại không có form dự đoán, bỏ qua script.js.');
+    return;
+  }
   const fields = {
     studentName: {
       input: document.getElementById('studentName'),
@@ -93,8 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function initializeConfig() {
     const fullEndpoint = buildApiUrl(APP_CONFIG.predictEndpoint);
-    result.apiEndpointLabel.textContent = `POST ${APP_CONFIG.predictEndpoint}`;
-    result.apiEndpointText.textContent = fullEndpoint;
+
+    if (result.apiEndpointLabel) {
+      result.apiEndpointLabel.textContent = 'Dự đoán khả năng';
+    }
+
+    if (result.apiEndpointText) {
+      result.apiEndpointText.textContent = fullEndpoint;
+    }
   }
 
   function validateIntegerRange(value, min, max, label) {
@@ -104,9 +113,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (numeric < min || numeric > max) return `${label} phải trong khoảng ${min} đến ${max}.`;
     return '';
   }
-
   function showError(fieldKey, message) {
     const field = fields[fieldKey];
+
+    if (!field || !field.input || !field.error) {
+      return;
+    }
+
     field.error.textContent = message;
     field.input.classList.toggle('input-error', Boolean(message));
     field.input.setAttribute('aria-invalid', Boolean(message));
@@ -134,17 +147,19 @@ document.addEventListener('DOMContentLoaded', () => {
       schoolsup: Number(fields.schoolsup.input.value),
       famsup: Number(fields.famsup.input.value),
       internet: Number(fields.internet.input.value),
-      note: document.getElementById('note').value.trim()
+      note: document.getElementById('note')?.value.trim() ?? ''
     };
   }
   function renderPayload(payload) {
+    if (!result.payloadPreview) return;
+
     result.payloadPreview.textContent = JSON.stringify({
-      studytime: null,
-      absences: null,
-      failures: null,
-      schoolsup: null,
-      famsup: null,
-      internet: null
+      studytime: payload.studytime,
+      absences: payload.absences,
+      failures: payload.failures,
+      schoolsup: payload.schoolsup,
+      famsup: payload.famsup,
+      internet: payload.internet
     }, null, 2);
   }
 
@@ -268,11 +283,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setUiState(type, message) {
-    result.formStatus.textContent = message;
-    result.formStatus.className = `status-banner ${type}`;
-    result.formStateBadge.textContent = type === 'loading' ? 'Đang gửi' : type === 'success' ? 'Hoàn tất' : type === 'error' ? 'Lỗi' : 'Sẵn sàng';
-    result.requestStatusBadge.textContent = type === 'loading' ? 'Đang xử lý' : type === 'success' ? 'Thành công' : type === 'error' ? 'Thất bại' : 'Chưa gửi';
-    result.connectionBadge.textContent = type === 'loading' ? 'Đang chờ phản hồi từ backend' : type === 'success' ? 'Kết nối thành công' : type === 'error' ? 'Kết nối lỗi' : 'Sẵn sàng gửi yêu cầu';
+    if (result.formStatus) {
+      result.formStatus.textContent = message;
+      result.formStatus.className = `status-banner ${type}`;
+    }
+
+    if (result.formStateBadge) {
+      result.formStateBadge.textContent =
+        type === 'loading' ? 'Đang gửi' :
+          type === 'success' ? 'Hoàn tất' :
+            type === 'error' ? 'Lỗi' :
+              'Sẵn sàng';
+    }
+
+    if (result.requestStatusBadge) {
+      result.requestStatusBadge.textContent =
+        type === 'loading' ? 'Đang xử lý' :
+          type === 'success' ? 'Thành công' :
+            type === 'error' ? 'Thất bại' :
+              'Chưa gửi';
+    }
+
+    if (result.connectionBadge) {
+      result.connectionBadge.textContent =
+        type === 'loading' ? 'Đang chờ phản hồi từ backend' :
+          type === 'success' ? 'Kết nối thành công' :
+            type === 'error' ? 'Kết nối lỗi' :
+              'Sẵn sàng gửi yêu cầu';
+    }
   }
 
   function updateResult(payload, normalized) {
@@ -348,7 +386,10 @@ document.addEventListener('DOMContentLoaded', () => {
       updateResult(payload, normalized);
       appendHistory(payload, normalized);
       setUiState('success', 'Nhận kết quả dự đoán thành công.');
-      document.getElementById('result-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('result-section')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
     } catch (error) {
       console.error(error);
       setUiState('error', error.message || 'Không thể hoàn tất yêu cầu dự đoán.');
@@ -375,13 +416,16 @@ document.addEventListener('DOMContentLoaded', () => {
       result.summaryInternet.textContent = '--';
       result.summaryFailures.textContent = '--';
       result.summaryRequestedAt.textContent = '--';
-      result.payloadPreview.textContent = JSON.stringify({
-        studytime: null,
-        absences: null,
-        G1: null,
-        G2: null,
-        failures: null
-      }, null, 2);
+      if (result.payloadPreview) {
+        result.payloadPreview.textContent = JSON.stringify({
+          studytime: null,
+          absences: null,
+          failures: null,
+          schoolsup: null,
+          famsup: null,
+          internet: null
+        }, null, 2);
+      }
       setUiState('idle', 'Sẵn sàng gửi yêu cầu.');
     }, 0);
   }
