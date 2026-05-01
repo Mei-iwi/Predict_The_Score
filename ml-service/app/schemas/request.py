@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class PredictionRequest(BaseModel):
-    studytime: int
-    failures: int
-    absences: int
-    schoolsup: int
-    famsup: int
-    internet: int
+    studytime: int = Field(..., ge=1, le=4)
+    failures: int = Field(..., ge=0, le=10)
+    absences: int = Field(..., ge=0, le=100)
+    schoolsup: int = Field(..., ge=0, le=1)
+    famsup: int = Field(..., ge=0, le=1)
+    internet: int = Field(..., ge=0, le=1)
