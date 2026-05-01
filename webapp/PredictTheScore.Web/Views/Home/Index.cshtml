@@ -35,8 +35,9 @@
           <strong>Hồi quy</strong>
         </div>
         <div class="hero-metric">
-          <span>API mặc định</span>
-          <strong id="apiEndpointLabel">POST /predict</strong>
+          <span>Chức năng</span>
+          @* <strong id="apiEndpointLabel">Dự đoán khả năng</strong> *@
+          <strong>Dự đoán khả năng</strong>
         </div>
         <div class="hero-metric full-width">
           <span>Trạng thái kết nối</span>
@@ -52,7 +53,7 @@
         <div class="card-head">
           <div>
             <h2>Thông tin đầu vào</h2>
-            <p>Nhập dữ liệu học tập của học sinh trước khi gửi đến backend</p>
+            <p>Nhập dữ liệu học tập của học sinh tại đây</p>
           </div>
           <span class="badge badge-soft" id="formStateBadge">Sẵn sàng</span>
         </div>
@@ -61,13 +62,13 @@
           <div class="field-grid">
             <div class="field-group">
               <label for="studentName">Họ và tên học sinh</label>
-              <input type="text" id="studentName" name="studentName" placeholder="Nguyễn Văn A" autocomplete="name" />
+              <input type="text" id="studentName" name="studentName" placeholder="Mai Nhật Cường" autocomplete="name" />
               <small class="error-text" id="studentNameError"></small>
             </div>
 
             <div class="field-group">
               <label for="className">Lớp</label>
-              <input type="text" id="className" name="className" placeholder="12A1" />
+              <input type="text" id="className" name="className" placeholder="12A2" />
               <small class="error-text" id="classNameError"></small>
             </div>
 
@@ -142,7 +143,6 @@
         <div class="card-head">
           <div>
             <h2>Kết quả dự đoán</h2>
-            <p>Kết quả được cập nhật sau khi backend xử lý xong</p>
           </div>
           <span class="badge" id="requestStatusBadge">Chưa gửi</span>
         </div>
@@ -174,24 +174,23 @@
           <div class="summary-grid">
             <div class="summary-item"><span>Học sinh</span><strong id="summaryStudent">--</strong></div>
             <div class="summary-item"><span>Lớp</span><strong id="summaryClass">--</strong></div>
-            <div class="summary-item"><span>studytime</span><strong id="summaryStudyTime">--</strong></div>
-            <div class="summary-item"><span>absences</span><strong id="summaryAbsences">--</strong></div>
-            <div class="summary-item"><span>failures</span><strong id="summaryFailures">--</strong></div>
-            <div class="summary-item"><span>schoolsup</span><strong id="summarySchoolsup">--</strong></div>
-            <div class="summary-item"><span>famsup</span><strong id="summaryFamsup">--</strong></div>
-            <div class="summary-item"><span>internet</span><strong id="summaryInternet">--</strong></div>
+            <div class="summary-item"><span>Thời gian học</span><strong id="summaryStudyTime">--</strong></div>
+            <div class="summary-item"><span>Số ngày nghỉ</span><strong id="summaryAbsences">--</strong></div>
+            <div class="summary-item"><span>Số lần chưa đạt</span><strong id="summaryFailures">--</strong></div>
+            <div class="summary-item"><span>Hỗ trợ từ nhà trường</span><strong id="summarySchoolsup">--</strong></div>
+            <div class="summary-item"><span>Hỗ trợ từ gia đình</span><strong id="summaryFamsup">--</strong></div>
+            <div class="summary-item"><span>Có Internet</span><strong id="summaryInternet">--</strong></div>
             <div class="summary-item"><span>Yêu cầu lúc</span><strong id="summaryRequestedAt">--</strong></div>
           </div>
         </div>
       </section>
     </section>
 
-    <section class="grid two-col meta-grid">
+    @* <section class="grid two-col meta-grid">
       <section class="card panel-card compact-card">
         <div class="card-head">
           <div>
             <h2>Trạng thái hệ thống</h2>
-            <p>Theo dõi tiến trình gọi API và phản hồi từ backend</p>
           </div>
         </div>
         <div class="status-board">
@@ -215,7 +214,6 @@
         <div class="card-head">
           <div>
             <h2>Dữ liệu gửi đi</h2>
-            <p>Payload JSON của lần gửi gần nhất</p>
           </div>
         </div>
         <div class="json-box">
@@ -229,39 +227,39 @@
             }</pre>
           </div>
         </section>
-      </section>
+      </section> *@
 
-      <section class="card panel-card history-card" id="history-section">
-        <div class="card-head">
-          <div>
-            <h2>Lịch sử dự đoán gần đây</h2>
-            <p>Lưu tạm trên trình duyệt để tiện theo dõi khi demo và kiểm thử</p>
-          </div>
+    <section class="card panel-card history-card" id="history-section">
+      <div class="card-head">
+        <div>
+          <h2>Lịch sử dự đoán gần đây</h2>
+          <p>Dữ liệu được lưu tạm thực hiện cho so sánh</p>
         </div>
+      </div>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Thời gian</th>
-                <th>Học sinh</th>
-                <th>Lớp</th>
-                <th>studytime</th>
-                <th>schoolsup</th>
-                <th>famsup</th>
-                <th>internet</th>
-                <th>Dự đoán</th>
-              </tr>
-            </thead>
-            <tbody id="historyBody">
-              <tr class="empty-row">
-                <td colspan="8">Chưa có lần dự đoán nào.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
-  </body>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Thời gian</th>
+              <th>Học sinh</th>
+              <th>Lớp</th>
+              <th>Thời gian học</th>
+              <th>Hỗ trợ từ nhà trường</th>
+              <th>Hỗ trợ từ gia đình</th>
+              <th>Có internet</th>
+              <th>Dự đoán</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr class="empty-row">
+              <td colspan="8">Chưa có lần dự đoán nào.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
 
 </html>
