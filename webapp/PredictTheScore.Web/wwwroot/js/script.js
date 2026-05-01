@@ -1,6 +1,6 @@
 const APP_CONFIG = {
-  apiBaseUrl: 'http://localhost:8000',
-  predictEndpoint: '/predict',
+  apiBaseUrl: '',
+  predictEndpoint: '/Predict/Submit',
   requestTimeoutMs: 15000
 };
 
@@ -31,22 +31,28 @@ document.addEventListener('DOMContentLoaded', () => {
       error: document.getElementById('absencesError'),
       validate: (value) => validateIntegerRange(value, 0, 100, 'Số buổi vắng học')
     },
-    g1: {
-      input: document.getElementById('g1'),
-      error: document.getElementById('g1Error'),
-      validate: (value) => validateIntegerRange(value, 0, 20, 'Điểm G1')
-    },
-    g2: {
-      input: document.getElementById('g2'),
-      error: document.getElementById('g2Error'),
-      validate: (value) => validateIntegerRange(value, 0, 20, 'Điểm G2')
-    },
     failures: {
       input: document.getElementById('failures'),
       error: document.getElementById('failuresError'),
       validate: (value) => validateIntegerRange(value, 0, 10, 'Số lần chưa đạt')
+    },
+    schoolsup: {
+      input: document.getElementById('schoolsup'),
+      error: document.getElementById('schoolsupError'),
+      validate: (value) => value !== '' ? '' : 'Vui lòng chọn hỗ trợ từ nhà trường.'
+    },
+    famsup: {
+      input: document.getElementById('famsup'),
+      error: document.getElementById('famsupError'),
+      validate: (value) => value !== '' ? '' : 'Vui lòng chọn hỗ trợ từ gia đình.'
+    },
+    internet: {
+      input: document.getElementById('internet'),
+      error: document.getElementById('internetError'),
+      validate: (value) => value !== '' ? '' : 'Vui lòng chọn tình trạng Internet.'
     }
   };
+
 
   const result = {
     resultPanel: document.getElementById('resultPanel'),
@@ -59,8 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
     summaryClass: document.getElementById('summaryClass'),
     summaryStudyTime: document.getElementById('summaryStudyTime'),
     summaryAbsences: document.getElementById('summaryAbsences'),
-    summaryG1: document.getElementById('summaryG1'),
-    summaryG2: document.getElementById('summaryG2'),
+    summarySchoolsup: document.getElementById('summarySchoolsup'),
+    summaryFamsup: document.getElementById('summaryFamsup'),
+    summaryInternet: document.getElementById('summaryInternet'),
     summaryFailures: document.getElementById('summaryFailures'),
     summaryRequestedAt: document.getElementById('summaryRequestedAt'),
     requestStatusBadge: document.getElementById('requestStatusBadge'),
@@ -123,23 +130,21 @@ document.addEventListener('DOMContentLoaded', () => {
       class_name: fields.className.input.value.trim(),
       studytime: Number(fields.studyTime.input.value),
       absences: Number(fields.absences.input.value),
-      G1: Number(fields.g1.input.value),
-      G2: Number(fields.g2.input.value),
       failures: Number(fields.failures.input.value),
+      schoolsup: Number(fields.schoolsup.input.value),
+      famsup: Number(fields.famsup.input.value),
+      internet: Number(fields.internet.input.value),
       note: document.getElementById('note').value.trim()
     };
   }
-
   function renderPayload(payload) {
     result.payloadPreview.textContent = JSON.stringify({
-      studytime: payload.studytime,
-      absences: payload.absences,
-      G1: payload.G1,
-      G2: payload.G2,
-      failures: payload.failures,
-      student_name: payload.student_name,
-      class_name: payload.class_name,
-      note: payload.note
+      studytime: null,
+      absences: null,
+      failures: null,
+      schoolsup: null,
+      famsup: null,
+      internet: null
     }, null, 2);
   }
 
@@ -278,12 +283,16 @@ document.addEventListener('DOMContentLoaded', () => {
     result.scoreDesc.textContent = normalized.description;
     result.feedbackText.textContent = normalized.advice;
 
+    result.summarySchoolsup.textContent = payload.schoolsup === 1 ? 'Có' : 'Không';
+    result.summaryFamsup.textContent = payload.famsup === 1 ? 'Có' : 'Không';
+    result.summaryInternet.textContent = payload.internet === 1 ? 'Có' : 'Không';
+
     result.summaryStudent.textContent = payload.student_name;
     result.summaryClass.textContent = payload.class_name;
     result.summaryStudyTime.textContent = `${payload.studytime} • ${studyTimeLabels[payload.studytime]}`;
     result.summaryAbsences.textContent = String(payload.absences);
-    result.summaryG1.textContent = String(payload.G1);
-    result.summaryG2.textContent = String(payload.G2);
+    // result.summaryG1.textContent = String(payload.G1);
+    // result.summaryG2.textContent = String(payload.G2);
     result.summaryFailures.textContent = String(payload.failures);
     result.summaryRequestedAt.textContent = new Date().toLocaleString('vi-VN');
   }
@@ -298,11 +307,11 @@ document.addEventListener('DOMContentLoaded', () => {
       <td>${escapeHtml(payload.student_name)}</td>
       <td>${escapeHtml(payload.class_name)}</td>
       <td>${payload.studytime}</td>
-      <td>${payload.G1}</td>
-      <td>${payload.G2}</td>
+      <td>${payload.schoolsup === 1 ? 'Có' : 'Không'}</td>
+      <td>${payload.famsup === 1 ? 'Có' : 'Không'}</td>
+      <td>${payload.internet === 1 ? 'Có' : 'Không'}</td>
       <td>${normalized.predicted20}</td>
     `;
-
     historyBody.prepend(row);
 
     while (historyBody.children.length > 6) {
@@ -334,6 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const data = await postPrediction(payload);
+      console.log('Response from /Predict/Submit:', data);
       const normalized = normalizeResponse(data, payload);
       updateResult(payload, normalized);
       appendHistory(payload, normalized);
@@ -360,8 +370,9 @@ document.addEventListener('DOMContentLoaded', () => {
       result.summaryClass.textContent = '--';
       result.summaryStudyTime.textContent = '--';
       result.summaryAbsences.textContent = '--';
-      result.summaryG1.textContent = '--';
-      result.summaryG2.textContent = '--';
+      result.summarySchoolsup.textContent = '--';
+      result.summaryFamsup.textContent = '--';
+      result.summaryInternet.textContent = '--';
       result.summaryFailures.textContent = '--';
       result.summaryRequestedAt.textContent = '--';
       result.payloadPreview.textContent = JSON.stringify({
