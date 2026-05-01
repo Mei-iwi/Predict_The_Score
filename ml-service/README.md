@@ -1,3 +1,11 @@
+# Train 
+
+```
+python scripts/download_data.py --skip-download-if-exists
+python scripts/build_dataset.py
+python scripts/train_model.py --scenario web_minimal
+python scripts/evaluate_model.py --model-path ml-service/artifacts/model.joblib
+```
 # Backend Python - Predict the score
 
 ## 1. Mục đích
