@@ -1,5 +1,29 @@
-from pydantic import BaseModel
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class PredictionResponse(BaseModel):
-    predicted_score: float
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "predicted_score": 12.8,
+                "predicted_score_10": 6.4,
+                "model_name": "LinearRegression-web_minimal",
+                "message": "Prediction completed successfully.",
+            }
+        }
+    )
+
+    predicted_score: float = Field(..., ge=0, le=20, description="Predicted final score G3 on the 20-point scale.")
+    predicted_score_10: float = Field(..., ge=0, le=10, description="Predicted final score converted to the 10-point scale.")
+    model_name: str = Field(..., description="Model or scenario used for prediction.")
+    message: str = Field(..., description="Short human-readable result message.")
+
+
+class ModelInfoResponse(BaseModel):
     model_name: str
+    scenario: str
+    feature_names: list[str]
+    target: str
+    metrics: dict[str, Any] | None = None

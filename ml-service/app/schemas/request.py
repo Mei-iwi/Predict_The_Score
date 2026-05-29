@@ -1,10 +1,23 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PredictionRequest(BaseModel):
-    studytime: int = Field(..., ge=1, le=4, description="Mức thời gian tự học, từ 1 đến 4")
-    failures: int = Field(..., ge=0, le=4, description="Số lần chưa đạt trước đó, từ 0 đến 4")
-    absences: int = Field(..., ge=0, le=93, description="Số buổi vắng học, từ 0 đến 93")
-    schoolsup: int = Field(..., ge=0, le=1, description="Có hỗ trợ từ nhà trường hay không")
-    famsup: int = Field(..., ge=0, le=1, description="Có hỗ trợ từ gia đình hay không")
-    internet: int = Field(..., ge=0, le=1, description="Có Internet tại nhà hay không")
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "studytime": 2,
+                "failures": 0,
+                "absences": 4,
+                "schoolsup": 1,
+                "famsup": 1,
+                "internet": 1,
+            }
+        }
+    )
+
+    studytime: int = Field(..., ge=1, le=4, description="Weekly study time level from 1 to 4.")
+    failures: int = Field(..., ge=0, le=4, description="Number of previous class failures from 0 to 4.")
+    absences: int = Field(..., ge=0, le=93, description="Number of school absences from 0 to 93.")
+    schoolsup: int = Field(..., ge=0, le=1, description="Extra school support: 1 for yes, 0 for no.")
+    famsup: int = Field(..., ge=0, le=1, description="Family educational support: 1 for yes, 0 for no.")
+    internet: int = Field(..., ge=0, le=1, description="Internet access at home: 1 for yes, 0 for no.")

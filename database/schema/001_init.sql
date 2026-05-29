@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS PredictionHistory (
     Internet TINYINT NOT NULL,
     Note TEXT NULL,
     PredictedScore DECIMAL(5,2) NOT NULL,
+    PredictedScore10 DECIMAL(5,2) NOT NULL,
     ModelName VARCHAR(100) NOT NULL,
     CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

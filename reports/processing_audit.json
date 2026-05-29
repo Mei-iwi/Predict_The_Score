@@ -1,0 +1,62 @@
+{
+  "dataset_source_name": "UCI Student Performance (data/raw)",
+  "selected_columns": [
+    "studytime",
+    "failures",
+    "absences",
+    "G1",
+    "G2",
+    "schoolsup",
+    "famsup",
+    "internet",
+    "higher",
+    "traveltime",
+    "G3",
+    "subject"
+  ],
+  "original_rows": 1044,
+  "rows_after_selecting_columns": 1044,
+  "duplicate_rows": 21,
+  "rows_after_dropping_duplicates": 1023,
+  "missing_or_invalid_rows": 0,
+  "rows_after_cleaning": 1023,
+  "yes_no_encoding": "yes/no values are encoded as 1/0.",
+  "rows_with_missing_values_after_type_cast": 0,
+  "rows_out_of_valid_ranges": 0,
+  "invalid_binary_counts_before_mapping": {
+    "schoolsup": 0,
+    "famsup": 0,
+    "internet": 0,
+    "higher": 0
+  },
+  "valid_ranges": {
+    "studytime": {
+      "min": 1,
+      "max": 4
+    },
+    "failures": {
+      "min": 0,
+      "max": 4
+    },
+    "absences": {
+      "min": 0,
+      "max": 93
+    },
+    "G1": {
+      "min": 0,
+      "max": 20
+    },
+    "G2": {
+      "min": 0,
+      "max": 20
+    },
+    "traveltime": {
+      "min": 1,
+      "max": 4
+    },
+    "G3": {
+      "min": 0,
+      "max": 20
+    }
+  }
+}

@@ -38,16 +38,21 @@ public class PredictController : Controller
         try
         {
             var prediction = await _mlApiClient.PredictAsync(mlRequest, cancellationToken);
+            var predictedScore10 = prediction.PredictedScore10 > 0
+                ? prediction.PredictedScore10
+                : Math.Round(prediction.PredictedScore / 2, 2);
             await _historyService.SaveAsync(input, mlRequest, prediction, cancellationToken);
 
             return Ok(new
             {
                 predicted_score = prediction.PredictedScore,
-                predicted_score_10 = Math.Round(prediction.PredictedScore / 2, 2),
+                predicted_score_10 = predictedScore10,
                 model_name = prediction.ModelName,
                 student_name = input.StudentName,
                 class_name = input.ClassName,
-                message = "Dự đoán thành công"
+                message = string.IsNullOrWhiteSpace(prediction.Message)
+                    ? "Dự đoán thành công"
+                    : prediction.Message
             });
         }
         catch (InvalidOperationException ex)
@@ -55,7 +60,7 @@ public class PredictController : Controller
             _logger.LogWarning(ex, "Prediction failed");
             return StatusCode(StatusCodes.Status502BadGateway, new
             {
-                message = ex.Message
+                message = "Không kết nối được ML backend. Hãy kiểm tra FastAPI đang chạy đúng địa chỉ."
             });
         }
 
@@ -81,7 +86,7 @@ public class PredictController : Controller
             internet = x.Internet,
             note = x.Note,
             predicted_score = x.PredictedScore,
-            predicted_score_10 = Math.Round((double)x.PredictedScore / 2, 2),
+            predicted_score_10 = x.PredictedScore10,
             model_name = x.ModelName,
             created_at = x.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")
         });

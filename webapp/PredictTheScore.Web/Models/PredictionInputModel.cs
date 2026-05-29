@@ -43,7 +43,7 @@ public class PredictionInputModel
 
     [JsonPropertyName("internet")]
     [Required(ErrorMessage = "Vui lòng chọn tình trạng Internet")]
-    [Range(0, 1, ErrorMessage = "Internet chỉ nhật 0 hoặc 1")]
+    [Range(0, 1, ErrorMessage = "Internet chỉ nhận 0 hoặc 1")]
     public int Internet { get; set; }
 
 

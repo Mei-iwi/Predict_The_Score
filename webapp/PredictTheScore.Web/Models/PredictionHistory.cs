@@ -24,6 +24,8 @@ public class PredictionHistory
 
     public decimal PredictedScore { get; set; }
 
+    public decimal PredictedScore10 { get; set; }
+
     public string ModelName { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; }

@@ -41,6 +41,7 @@ public class PredictionHistoryService : IPredictionHistoryService
             Internet,
             Note,
             PredictedScore,
+            PredictedScore10,
             ModelName
         )
         VALUES
@@ -55,6 +56,7 @@ public class PredictionHistoryService : IPredictionHistoryService
             @Internet,
             @Note,
             @PredictedScore,
+            @PredictedScore10,
             @ModelName
         );
         """;
@@ -70,7 +72,12 @@ public class PredictionHistoryService : IPredictionHistoryService
         cmd.Parameters.AddWithValue("@FamSup", mlRequest.Famsup);
         cmd.Parameters.AddWithValue("@Internet", mlRequest.Internet);
         cmd.Parameters.AddWithValue("@Note", input.Note ?? string.Empty);
+        var predictedScore10 = result.PredictedScore10 > 0
+            ? result.PredictedScore10
+            : Math.Round(result.PredictedScore / 2, 2);
+
         cmd.Parameters.AddWithValue("@PredictedScore", result.PredictedScore);
+        cmd.Parameters.AddWithValue("@PredictedScore10", predictedScore10);
         cmd.Parameters.AddWithValue("@ModelName", result.ModelName);
 
         await cmd.ExecuteNonQueryAsync(cancellationToken);
@@ -105,6 +112,7 @@ public class PredictionHistoryService : IPredictionHistoryService
         Internet,
         Note,
         PredictedScore,
+        PredictedScore10,
         ModelName,
         CreatedAt
     FROM PredictionHistory
@@ -140,6 +148,7 @@ public class PredictionHistoryService : IPredictionHistoryService
                 FamSup = reader.GetInt32(reader.GetOrdinal("FamSup")),
                 Internet = reader.GetInt32(reader.GetOrdinal("Internet")),
                 PredictedScore = reader.GetDecimal(reader.GetOrdinal("PredictedScore")),
+                PredictedScore10 = reader.GetDecimal(reader.GetOrdinal("PredictedScore10")),
                 ModelName = reader.GetString(reader.GetOrdinal("ModelName")),
                 CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
             });
