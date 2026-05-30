@@ -40,7 +40,7 @@ BINARY_COLS = ["schoolsup", "famsup", "internet", "higher"]
 VALID_RANGES = {
     "studytime": (1, 4),
     "failures": (0, 4),
-    "absences": (0, 60),
+    "absences": (0, 93),
     "G1": (0, 20),
     "G2": (0, 20),
     "traveltime": (1, 4),
@@ -143,9 +143,12 @@ def preprocess_student_performance() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
 
     df["subject"] = df["subject"].map({"mat": 0, "por": 1})
 
-    missing_rows = int(df.isna().any(axis=1).sum())
+    missing_rows = int(df.isna().any(axis=1).sum()) # type: ignore
+    missing_rows_path = REPORT_DIR / "invalid_rows_after_cast.csv"
     if missing_rows:
-        df[df.isna().any(axis=1)].to_csv(REPORT_DIR / "invalid_rows_after_cast.csv", index=False)
+        df[df.isna().any(axis=1)].to_csv(missing_rows_path, index=False) # type: ignore
+    elif missing_rows_path.exists():
+        missing_rows_path.unlink()
 
     df = df.dropna().reset_index(drop=True)
 
@@ -154,8 +157,11 @@ def preprocess_student_performance() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
         valid_range_mask &= df[col].between(min_value, max_value)
 
     invalid_range_rows = int((~valid_range_mask).sum())
+    invalid_range_path = REPORT_DIR / "invalid_rows_out_of_range.csv"
     if invalid_range_rows:
-        df.loc[~valid_range_mask].to_csv(REPORT_DIR / "invalid_rows_out_of_range.csv", index=False)
+        df.loc[~valid_range_mask].to_csv(invalid_range_path, index=False)
+    elif invalid_range_path.exists():
+        invalid_range_path.unlink()
 
     df_clean = df.loc[valid_range_mask].reset_index(drop=True)
 
