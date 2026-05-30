@@ -1,6 +1,18 @@
 {
+<<<<<<< HEAD
   "dataset_source_name": "UCI Student Performance (data/raw)",
   "selected_columns": [
+=======
+  "data_source": "data/raw",
+  "raw_rows_combined": 1044,
+  "rows_after_column_selection": 1044,
+  "duplicate_rows_before_drop": 21,
+  "rows_after_drop_duplicates": 1023,
+  "rows_with_na_after_type_cast": 0,
+  "rows_out_of_valid_ranges": 1,
+  "rows_after_cleaning": 1022,
+  "columns_used": [
+>>>>>>> 6a8d7ef5f83ace4309a9a8a52bab06e2c338f6bc
     "studytime",
     "failures",
     "absences",
@@ -14,6 +26,7 @@
     "G3",
     "subject"
   ],
+<<<<<<< HEAD
   "original_rows": 1044,
   "rows_after_selecting_columns": 1044,
   "duplicate_rows": 21,
@@ -23,6 +36,8 @@
   "yes_no_encoding": "yes/no values are encoded as 1/0.",
   "rows_with_missing_values_after_type_cast": 0,
   "rows_out_of_valid_ranges": 0,
+=======
+>>>>>>> 6a8d7ef5f83ace4309a9a8a52bab06e2c338f6bc
   "invalid_binary_counts_before_mapping": {
     "schoolsup": 0,
     "famsup": 0,
@@ -40,7 +55,11 @@
     },
     "absences": {
       "min": 0,
+<<<<<<< HEAD
       "max": 93
+=======
+      "max": 60
+>>>>>>> 6a8d7ef5f83ace4309a9a8a52bab06e2c338f6bc
     },
     "G1": {
       "min": 0,

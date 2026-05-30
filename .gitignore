@@ -83,6 +83,7 @@ publish/
 app.publish/
 
 # Rider / VS
+.vs/
 _ReSharper*/
 *.DotSettings.user
 

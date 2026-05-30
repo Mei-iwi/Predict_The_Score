@@ -87,7 +87,7 @@ def main() -> int:
     detail_df.to_csv(detail_path, index=False)
 
     plt.figure(figsize=(6, 5))
-    plt.scatter(y_test, y_pred, alpha=0.7)
+    plt.scatter(y_test, y_pred, alpha=0.7, color="teal", edgecolor="black")
     plt.xlabel("Giá trị thật G3")
     plt.ylabel("Giá trị dự đoán G3")
     plt.title(f"Actual vs Predicted - {scenario}")

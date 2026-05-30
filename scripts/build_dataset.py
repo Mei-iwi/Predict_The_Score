@@ -40,7 +40,7 @@ BINARY_COLS = ["schoolsup", "famsup", "internet", "higher"]
 VALID_RANGES = {
     "studytime": (1, 4),
     "failures": (0, 4),
-    "absences": (0, 93),
+    "absences": (0, 60),
     "G1": (0, 20),
     "G2": (0, 20),
     "traveltime": (1, 4),
@@ -245,7 +245,7 @@ def save_feature_config() -> None:
 
 def save_figures(df_clean: pd.DataFrame, pearson_corr: pd.DataFrame) -> None:
     plt.figure(figsize=(10, 8))
-    image = plt.imshow(pearson_corr, interpolation="nearest")
+    image = plt.imshow(pearson_corr, interpolation="nearest", cmap="viridis")
     plt.colorbar(image)
     plt.xticks(range(len(pearson_corr.columns)), pearson_corr.columns, rotation=45, ha="right")
     plt.yticks(range(len(pearson_corr.index)), pearson_corr.index)
