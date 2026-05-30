@@ -1,4 +1,3 @@
-
 namespace PredictTheScore.Web.Models.Prediction;
 
 public class MlApiClient : IMlApiClient
@@ -14,38 +13,38 @@ public class MlApiClient : IMlApiClient
         _logger = logger;
     }
 
-
     public async Task<PredictionResponseDto> PredictAsync(PredictionRequestDto request, CancellationToken cancellationToken = default)
     {
         var endpoint = _configuration["MlService:PredictEndpoint"] ?? "/predict";
+
         try
         {
-            var respone = await _httpClient.PostAsJsonAsync(endpoint, request, cancellationToken);
+            var response = await _httpClient.PostAsJsonAsync(endpoint, request, cancellationToken);
+            var rawBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
-            var rawBody = await respone.Content.ReadAsStringAsync(cancellationToken);
-
-            if (!respone.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("ML API returned error, StatusCode={StatusCode}, Body={Body}", respone.StatusCode, rawBody);
-                throw new InvalidOperationException($"ML API lỗi với mã trạng thái {(int)respone.StatusCode}");
+                _logger.LogWarning("ML API returned error, StatusCode={StatusCode}, Body={Body}", response.StatusCode, rawBody);
+                throw new InvalidOperationException($"ML API loi voi ma trang thai {(int)response.StatusCode}");
             }
-            var result = await respone.Content.ReadFromJsonAsync<PredictionResponseDto>(cancellationToken: cancellationToken);
+
+            var result = await response.Content.ReadFromJsonAsync<PredictionResponseDto>(cancellationToken: cancellationToken);
             if (result == null)
             {
-                throw new InvalidOperationException("ML API trả về dữ liệu rống");
+                throw new InvalidOperationException("ML API tra ve du lieu rong");
             }
-            return result;
 
+            return result;
         }
         catch (TaskCanceledException ex)
         {
-            _logger.LogError(ex, "Timeout when calling ML api");
-            throw new InvalidOperationException("Quá thời gian chờ phản hồi từ ML API");
+            _logger.LogError(ex, "Timeout when calling ML API");
+            throw new InvalidOperationException("Qua thoi gian cho phan hoi tu ML API");
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Cannot connect to ML API");
-            throw new InvalidOperationException("Không kết nối được backend ML");
+            throw new InvalidOperationException("Khong ket noi duoc backend ML");
         }
     }
 }

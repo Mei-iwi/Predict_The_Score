@@ -1,0 +1,3 @@
+ALTER TABLE PredictionHistory
+ADD COLUMN PredictedScore10 DECIMAL(5,2) NOT NULL DEFAULT 0.00
+AFTER PredictedScore;

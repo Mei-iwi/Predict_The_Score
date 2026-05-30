@@ -92,6 +92,7 @@ def main() -> int:
 
     bundle = {
         "model": model,
+        "model_name": "LinearRegression",
         "scenario": args.scenario,
         "feature_names": feature_names,
         "target": target,
@@ -100,6 +101,8 @@ def main() -> int:
         "created_at": created_at,
         "test_indices": X_test.index.tolist(),
         "train_indices": X_train.index.tolist(),
+        "coefficients": {name: float(coef) for name, coef in zip(feature_names, model.coef_)},
+        "intercept": float(model.intercept_),
         "metrics": {
             "train": train_metrics,
             "test": test_metrics,
@@ -118,6 +121,9 @@ def main() -> int:
         "target": target,
         "rows_used": int(len(df)),
         "created_at": created_at,
+        "model_name": "LinearRegression",
+        "test_size": args.test_size,
+        "random_state": args.random_state,
         "train_metrics": train_metrics,
         "test_metrics": test_metrics,
         "coefficients": {name: float(coef) for name, coef in zip(feature_names, model.coef_)},
