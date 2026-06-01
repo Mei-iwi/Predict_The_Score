@@ -20,20 +20,32 @@ public class PredictController : Controller
     [HttpPost("Submit")]
     public async Task<IActionResult> Submit([FromBody] PredictionInputModel input, CancellationToken cancellationToken)
     {
-        // MVC nhận dữ liệu từ form web, kiểm tra validation rồi chỉ gửi 6 field model cần sang FastAPI.
+        // MVC nhận dữ liệu từ form web, kiểm tra validation rồi gửi đúng field theo scenario sang FastAPI.
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
         }
 
+        var scenarioError = ValidateScenarioInput(input);
+        if (!string.IsNullOrWhiteSpace(scenarioError))
+        {
+            return BadRequest(new { message = scenarioError });
+        }
+
         var mlRequest = new PredictionRequestDto
         {
+            Scenario = string.IsNullOrWhiteSpace(input.Scenario) ? "web_minimal" : input.Scenario,
             Studytime = input.Studytime,
             Failures = input.Failures,
             Absences = input.Absences,
             Schoolsup = input.Schoolsup,
             Famsup = input.Famsup,
-            Internet = input.Internet
+            Internet = input.Internet,
+            Subject = input.Subject,
+            Higher = input.Higher,
+            Traveltime = input.Traveltime,
+            G1 = input.G1,
+            G2 = input.G2
         };
 
         try
@@ -48,8 +60,11 @@ public class PredictController : Controller
             return Ok(new
             {
                 predicted_score = prediction.PredictedScore,
+                predicted_score_20 = prediction.PredictedScore20 > 0 ? prediction.PredictedScore20 : prediction.PredictedScore,
                 predicted_score_10 = predictedScore10,
                 model_name = prediction.ModelName,
+                scenario = prediction.Scenario,
+                model_scenario = prediction.ModelScenario,
                 student_name = input.StudentName,
                 class_name = input.ClassName,
                 message = string.IsNullOrWhiteSpace(prediction.Message)
@@ -62,7 +77,9 @@ public class PredictController : Controller
             _logger.LogWarning(ex, "Prediction failed");
             return StatusCode(StatusCodes.Status502BadGateway, new
             {
-                message = "Không kết nối được ML backend. Hãy kiểm tra FastAPI đang chạy đúng địa chỉ."
+                message = string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Không kết nối được ML backend. Hãy kiểm tra FastAPI đang chạy đúng địa chỉ."
+                    : ex.Message
             });
         }
 
@@ -87,6 +104,7 @@ public class PredictController : Controller
             schoolsup = x.SchoolSup,
             famsup = x.FamSup,
             internet = x.Internet,
+            scenario = x.Scenario,
             note = x.Note,
             predicted_score = x.PredictedScore,
             predicted_score_10 = x.PredictedScore10,
@@ -97,4 +115,35 @@ public class PredictController : Controller
         return Ok(result);
     }
 
+    private static string? ValidateScenarioInput(PredictionInputModel input)
+    {
+        var scenario = string.IsNullOrWhiteSpace(input.Scenario) ? "web_minimal" : input.Scenario;
+        if (scenario is not ("web_minimal" or "early_warning" or "reference"))
+        {
+            return "Scenario chỉ nhận web_minimal, early_warning hoặc reference.";
+        }
+
+        if (scenario is "early_warning" or "reference")
+        {
+            if (input.Subject is not ("mat" or "por"))
+            {
+                return "Môn học chỉ nhận mat hoặc por.";
+            }
+            if (input.Higher is null)
+            {
+                return "Vui lòng chọn mong muốn học tiếp lên cao.";
+            }
+            if (input.Traveltime is null)
+            {
+                return "Vui lòng chọn thời gian đi học.";
+            }
+        }
+
+        if (scenario == "reference" && (input.G1 is null || input.G2 is null))
+        {
+            return "Kịch bản reference cần nhập điểm G1 và G2.";
+        }
+
+        return null;
+    }
 }

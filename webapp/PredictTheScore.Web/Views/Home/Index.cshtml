@@ -58,6 +58,26 @@
         </div>
 
         <form id="prediction-form" class="form-panel" novalidate>
+          <div class="scenario-toolbar">
+            <div>
+              <h3 id="scenarioTitle">Dự đoán nhanh</h3>
+              <p id="scenarioDescription">Kịch bản nhập nhanh, chỉ dùng các thông tin cơ bản.</p>
+            </div>
+            <button type="button" class="btn btn-ghost" id="upgradeModelButton">Nâng cấp mô hình dự đoán</button>
+          </div>
+
+          <div class="scenario-selector-section advanced-section hidden" id="advancedSection">
+            <div class="field-group">
+              <label for="scenario">Kịch bản dự đoán</label>
+              <select id="scenario" name="scenario">
+                <option value="web_minimal">Dự đoán nhanh</option>
+                <option value="early_warning">Cảnh báo sớm</option>
+                <option value="reference">Tham chiếu có điểm G1/G2</option>
+              </select>
+              <small class="error-text" id="scenarioError"></small>
+            </div>
+          </div>
+
           <div class="field-grid">
             <div class="field-group">
               <label for="studentName">Họ và tên học sinh</label>
@@ -124,6 +144,50 @@
               <small class="error-text" id="internetError"></small>
             </div>
 
+            <div class="field-group advanced-field scenario-field field-early-warning early-field field-reference reference-field hidden">
+              <label for="subject">Môn học</label>
+              <select id="subject" name="subject">
+                <option value="">Chọn môn học</option>
+                <option value="mat">Toán</option>
+                <option value="por">Portuguese / Tiếng Bồ Đào Nha</option>
+              </select>
+              <small class="error-text" id="subjectError"></small>
+            </div>
+
+            <div class="field-group advanced-field scenario-field field-early-warning early-field field-reference reference-field hidden">
+              <label for="higher">Có mong muốn học tiếp lên cao không?</label>
+              <select id="higher" name="higher">
+                <option value="">Chọn lựa chọn</option>
+                <option value="1">Có</option>
+                <option value="0">Không</option>
+              </select>
+              <small class="error-text" id="higherError"></small>
+            </div>
+
+            <div class="field-group advanced-field scenario-field field-early-warning early-field field-reference reference-field hidden">
+              <label for="traveltime">Thời gian đi học</label>
+              <select id="traveltime" name="traveltime">
+                <option value="">Chọn thời gian đi học</option>
+                <option value="1">1 - Dưới 15 phút</option>
+                <option value="2">2 - 15 đến 30 phút</option>
+                <option value="3">3 - 30 phút đến 1 giờ</option>
+                <option value="4">4 - Trên 1 giờ</option>
+              </select>
+              <small class="error-text" id="traveltimeError"></small>
+            </div>
+
+            <div class="field-group advanced-field scenario-field field-reference reference-field hidden">
+              <label for="g1">Điểm kỳ 1 (G1)</label>
+              <input type="number" id="g1" name="g1" min="0" max="20" step="1" placeholder="12" />
+              <small class="error-text" id="g1Error"></small>
+            </div>
+
+            <div class="field-group advanced-field scenario-field field-reference reference-field hidden">
+              <label for="g2">Điểm kỳ 2 (G2)</label>
+              <input type="number" id="g2" name="g2" min="0" max="20" step="1" placeholder="13" />
+              <small class="error-text" id="g2Error"></small>
+            </div>
+
             <div class="field-group field-group-full">
               <label for="note">Ghi chú</label>
               <textarea id="note" name="note" rows="4"
@@ -173,12 +237,17 @@
           <div class="summary-grid">
             <div class="summary-item"><span>Học sinh</span><strong id="summaryStudent">--</strong></div>
             <div class="summary-item"><span>Lớp</span><strong id="summaryClass">--</strong></div>
+            <div class="summary-item"><span>Kịch bản</span><strong id="summaryScenario">--</strong></div>
             <div class="summary-item"><span>Thời gian học</span><strong id="summaryStudyTime">--</strong></div>
             <div class="summary-item"><span>Số ngày nghỉ</span><strong id="summaryAbsences">--</strong></div>
             <div class="summary-item"><span>Số lần chưa đạt</span><strong id="summaryFailures">--</strong></div>
             <div class="summary-item"><span>Hỗ trợ từ nhà trường</span><strong id="summarySchoolsup">--</strong></div>
             <div class="summary-item"><span>Hỗ trợ từ gia đình</span><strong id="summaryFamsup">--</strong></div>
             <div class="summary-item"><span>Có Internet</span><strong id="summaryInternet">--</strong></div>
+            <div class="summary-item"><span>Môn học</span><strong id="summarySubject">--</strong></div>
+            <div class="summary-item"><span>Học tiếp lên cao</span><strong id="summaryHigher">--</strong></div>
+            <div class="summary-item"><span>Thời gian đi học</span><strong id="summaryTraveltime">--</strong></div>
+            <div class="summary-item"><span>G1/G2</span><strong id="summaryGrades">--</strong></div>
             <div class="summary-item"><span>Yêu cầu lúc</span><strong id="summaryRequestedAt">--</strong></div>
           </div>
         </div>
@@ -243,6 +312,7 @@
               <th>Thời gian</th>
               <th>Học sinh</th>
               <th>Lớp</th>
+              <th>Kịch bản</th>
               <th>Thời gian học</th>
               <th>Hỗ trợ từ nhà trường</th>
               <th>Hỗ trợ từ gia đình</th>
@@ -252,7 +322,7 @@
           </thead>
           <tbody id="historyBody">
             <tr class="empty-row">
-              <td colspan="8">Chưa có lần dự đoán nào.</td>
+              <td colspan="9">Chưa có lần dự đoán nào.</td>
             </tr>
           </tbody>
         </table>

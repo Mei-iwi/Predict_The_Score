@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace PredictTheScore.Web.Models.Prediction;
 
 public class MlApiClient : IMlApiClient
@@ -26,7 +28,7 @@ public class MlApiClient : IMlApiClient
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning("ML API returned error, StatusCode={StatusCode}, Body={Body}", response.StatusCode, rawBody);
-                throw new InvalidOperationException($"ML API loi voi ma trang thai {(int)response.StatusCode}");
+                throw new InvalidOperationException(ParseErrorMessage(rawBody, (int)response.StatusCode));
             }
 
             var result = await response.Content.ReadFromJsonAsync<PredictionResponseDto>(cancellationToken: cancellationToken);
@@ -47,5 +49,28 @@ public class MlApiClient : IMlApiClient
             _logger.LogError(ex, "Cannot connect to ML API");
             throw new InvalidOperationException("Không kết nối được backend ML");
         }
+    }
+
+    private static string ParseErrorMessage(string rawBody, int statusCode)
+    {
+        if (!string.IsNullOrWhiteSpace(rawBody))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(rawBody);
+                if (doc.RootElement.TryGetProperty("detail", out var detail))
+                {
+                    return detail.ValueKind == JsonValueKind.String
+                        ? detail.GetString() ?? $"ML API lỗi với mã trạng thái {statusCode}"
+                        : detail.ToString();
+                }
+            }
+            catch (JsonException)
+            {
+                return rawBody;
+            }
+        }
+
+        return $"ML API lỗi với mã trạng thái {statusCode}";
     }
 }

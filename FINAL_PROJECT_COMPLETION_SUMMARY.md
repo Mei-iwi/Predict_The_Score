@@ -1,66 +1,65 @@
-# Final project completion summary
+# FINAL_PROJECT_COMPLETION_SUMMARY.md
 
-## Đã hoàn thiện
+## 1. Kết quả cập nhật
 
-- Chuẩn hóa `README.md` với hướng dẫn chạy data pipeline, backend, frontend, Docker và test.
-- Bổ sung tài liệu phục vụ báo cáo:
-  - `docs/project-overview.md`
-  - `docs/data-analysis.md`
-  - `docs/model-training.md`
-  - `docs/system-design.md`
-  - `docs/api-spec.md`
-  - `docs/demo-guide.md`
-  - `docs/teamwork.md`
-  - `docs/report-evidence.md`
-  - `docs/screenshots/README.md`
-- Bổ sung tài liệu nộp bài:
-  - `REPORT_SOURCE_MATERIAL_UPDATED.md`
-  - `SLIDE_CONTENT.md`
-  - `SUBMISSION_CHECKLIST.md`
-- Bổ sung bảng và sơ đồ phục vụ report/slide:
-  - `reports/tables/feature_scenarios.csv`
-  - `reports/tables/model_metrics.csv`
-  - `reports/figures/architecture_diagram.mmd`
-  - `reports/figures/prediction_flow.mmd`
-- Thêm comment tiếng Việt ngắn gọn vào các phần quan trọng của pipeline ML, FastAPI, MVC, service lưu history và JavaScript.
-- Sửa validation HTML để khớp backend:
-  - `absences`: `0-93`
-  - `failures`: `0-4`
-- Pin lại dependency trong `ml-service/requirements.txt` và bỏ `jupyter/notebook` khỏi requirements backend để giảm dependency không cần cho API/test.
+Project đã được kiểm tra và cập nhật để hỗ trợ 3 kịch bản dự đoán:
 
-## Kết quả kiểm thử đã chạy
+- `web_minimal`: mặc định, dùng 6 field cơ bản trên form.
+- `early_warning`: thêm `subject`, `higher`, `traveltime`.
+- `reference`: thêm `subject`, `higher`, `traveltime`, `G1`, `G2`.
 
-| Lệnh | Kết quả |
-| --- | --- |
-| `dotnet build webapp/PredictTheScore.Web/PredictTheScore.Web.csproj` | Pass khi chạy ngoài sandbox, 0 warning, 0 error |
-| `dotnet build webapp/PredictTheScore.Web/PredictTheScore.Web.csproj --no-restore` | Pass, 0 warning, 0 error |
-| Python AST parse cho `scripts/*.py` và `ml-service/app/**/*.py` | Pass, parse 13 file Python thành công |
-| Parse JSON reports | Pass |
-| Parse CSV reports | Pass |
+Không ghi secret, mật khẩu database hoặc connection string thật vào file tổng kết này.
 
-## Lệnh chưa chạy được trong môi trường hiện tại
+## 2. Artifact model
 
-| Lệnh | Lý do |
-| --- | --- |
-| `python scripts/build_dataset.py` | Python hiện tại thiếu `matplotlib` và các package project |
-| `python scripts/train_model.py --scenario web_minimal` | Chưa cài được dependency Python |
-| `python scripts/evaluate_model.py` | Chưa cài được dependency Python |
-| `python scripts/compare_models.py` | Chưa cài được dependency Python |
-| `pytest ml-service/tests` | Python hiện tại thiếu `pytest`, `fastapi`, `pandas`, `scikit-learn` |
-| `docker compose build ml-service` | Docker Desktop engine chưa chạy: không tìm thấy `dockerDesktopLinuxEngine` |
+| Scenario | Artifact | Trạng thái |
+| --- | --- | --- |
+| `web_minimal` | `ml-service/artifacts/model_web_minimal.joblib` | Có |
+| `early_warning` | `ml-service/artifacts/model_early_warning.joblib` | Có |
+| `reference` | `ml-service/artifacts/model_reference.joblib` | Có |
 
-## Ghi chú môi trường
+## 3. Frontend scenario UI
 
-- Interpreter trong sandbox là `C:\msys64\ucrt64\bin\python.exe`.
-- Interpreter này không có các package Python của project.
-- Thử cài dependency bằng pip vào `.codex_pydeps` bị lỗi vì MSYS2 Python không dùng wheel Windows chuẩn cho `pandas/numpy` và quá trình build dependency bị lỗi SSL khi tải build tool.
-- Trên máy demo nên dùng Python chính thức từ python.org hoặc Docker Desktop đang chạy, sau đó cài `ml-service/requirements.txt`.
+Đã cập nhật giao diện trong `Views/Home/Index.cshtml` và `wwwroot/js/script.js`:
 
-## Các phần nhóm cần bổ sung thủ công
+- Khi mở trang lần đầu: dùng `web_minimal`, ẩn selector scenario, ẩn và disable các field nâng cao.
+- Nút `Nâng cấp mô hình dự đoán` hiển thị selector scenario và đổi thành `Thu gọn mô hình dự đoán`.
+- Chọn `web_minimal`: chỉ gửi 6 field cơ bản.
+- Chọn `early_warning`: chỉ hiện và gửi `subject`, `higher`, `traveltime`.
+- Chọn `reference`: hiện và gửi `subject`, `higher`, `traveltime`, `G1`, `G2`.
+- Khi thu gọn: reset về `web_minimal`, ẩn selector, ẩn và disable field nâng cao.
 
-- Điền tên thành viên và commit evidence trong `docs/teamwork.md`.
-- Chụp screenshot demo theo `docs/screenshots/README.md`.
-- Tạo file PowerPoint từ `SLIDE_CONTENT.md`.
-- Biên tập Word report từ `REPORT_SOURCE_MATERIAL_UPDATED.md` và các docs trong `docs/`.
-- Không đưa mật khẩu database thật từ cấu hình local/Docker vào báo cáo hoặc slide.
+Các hàm JS chính đã có:
 
+- `initScenarioUi()`
+- `toggleAdvancedMode()`
+- `updateScenarioFields()`
+- `getSelectedScenario()`
+- `buildPredictionPayload()`
+
+## 4. Backend, MVC và database
+
+- FastAPI nhận `scenario`, mặc định là `web_minimal`.
+- `early_warning` yêu cầu thêm `subject`, `higher`, `traveltime`.
+- `reference` yêu cầu thêm `subject`, `higher`, `traveltime`, `G1`, `G2`.
+- MVC DTO/controller/client đã truyền scenario và field nâng cao.
+- History đã có cột `Scenario`.
+- Có migration `database/migrations/003_add_scenario.sql` cho database đã tồn tại.
+
+## 5. Kiểm tra đã chạy
+
+| Lệnh | Kết quả | Ghi chú |
+| --- | --- | --- |
+| `node --check webapp/PredictTheScore.Web/wwwroot/js/script.js` | Pass | JS không lỗi cú pháp |
+| Kiểm tra artifact 3 model | Pass | Đủ 3 file `.joblib` |
+| `docker compose config` | Pass | Compose parse được; không copy output có secret vào tài liệu |
+| `dotnet build webapp/PredictTheScore.Web/PredictTheScore.Web.csproj` | Blocked | File Debug đang bị process `PredictTheScore.Web` giữ |
+| `dotnet build webapp/PredictTheScore.Web/PredictTheScore.Web.csproj -c Release -p:UseAppHost=false` | Pass | 0 warning, 0 error |
+| `python -m pytest ml-service/tests` | Failed | Python hiện tại thiếu package `pytest` |
+
+## 6. Việc cần làm trước demo
+
+- Nếu đang chạy webapp từ `bin/Debug`, dừng process `PredictTheScore.Web` rồi chạy lại `dotnet build` Debug nếu cần.
+- Tạo/cài lại Python virtual environment theo README, sau đó chạy `python -m pytest ml-service/tests`.
+- Với database đã có sẵn, chạy migration `database/migrations/003_add_scenario.sql` để thêm cột `Scenario`.
+- Demo đủ 3 scenario trên giao diện và kiểm tra history lưu đúng scenario.

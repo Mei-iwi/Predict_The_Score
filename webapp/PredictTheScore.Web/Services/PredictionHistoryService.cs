@@ -40,6 +40,7 @@ public class PredictionHistoryService : IPredictionHistoryService
             SchoolSup,
             FamSup,
             Internet,
+            Scenario,
             Note,
             PredictedScore,
             PredictedScore10,
@@ -55,6 +56,7 @@ public class PredictionHistoryService : IPredictionHistoryService
             @SchoolSup,
             @FamSup,
             @Internet,
+            @Scenario,
             @Note,
             @PredictedScore,
             @PredictedScore10,
@@ -72,6 +74,7 @@ public class PredictionHistoryService : IPredictionHistoryService
         cmd.Parameters.AddWithValue("@SchoolSup", mlRequest.Schoolsup);
         cmd.Parameters.AddWithValue("@FamSup", mlRequest.Famsup);
         cmd.Parameters.AddWithValue("@Internet", mlRequest.Internet);
+        cmd.Parameters.AddWithValue("@Scenario", mlRequest.Scenario);
         cmd.Parameters.AddWithValue("@Note", input.Note ?? string.Empty);
         var predictedScore10 = result.PredictedScore10 > 0
             ? result.PredictedScore10
@@ -112,6 +115,7 @@ public class PredictionHistoryService : IPredictionHistoryService
         SchoolSup,
         FamSup,
         Internet,
+        Scenario,
         Note,
         PredictedScore,
         PredictedScore10,
@@ -149,6 +153,9 @@ public class PredictionHistoryService : IPredictionHistoryService
                 SchoolSup = reader.GetInt32(reader.GetOrdinal("SchoolSup")),
                 FamSup = reader.GetInt32(reader.GetOrdinal("FamSup")),
                 Internet = reader.GetInt32(reader.GetOrdinal("Internet")),
+                Scenario = reader.IsDBNull(reader.GetOrdinal("Scenario"))
+    ? null
+    : reader.GetString(reader.GetOrdinal("Scenario")),
                 PredictedScore = reader.GetDecimal(reader.GetOrdinal("PredictedScore")),
                 PredictedScore10 = reader.GetDecimal(reader.GetOrdinal("PredictedScore10")),
                 ModelName = reader.GetString(reader.GetOrdinal("ModelName")),

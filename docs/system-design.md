@@ -41,9 +41,20 @@ Luồng trong frontend:
 5. `PredictionHistoryService` lưu kết quả vào MySQL.
 6. `/Predict/History` trả lịch sử mới nhất cho giao diện.
 
+## Phần mở rộng scenario
+
+Frontend có nút **Nâng cấp mô hình dự đoán**. Khi mở, người dùng chọn `web_minimal`, `early_warning` hoặc `reference`. JavaScript ẩn/hiện field theo scenario rồi gửi JSON đến MVC. MVC chuyển payload sang FastAPI. FastAPI nạp artifact theo scenario:
+
+- `model_web_minimal.joblib`
+- `model_early_warning.joblib`
+- `model_reference.joblib`
+
+Nếu artifact nâng cao chưa tồn tại, API trả lỗi rõ và hướng dẫn train model tương ứng.
+
 ## Database
 
 Bảng chính là `PredictionHistory`. Bảng lưu tên học sinh, lớp, input, điểm dự đoán thang 20, điểm quy đổi thang 10, tên model và thời gian tạo.
 
 SQL khởi tạo nằm ở `database/schema/001_init.sql`.
 
+Cột `Scenario` lưu kịch bản dự đoán. Với database cũ, chạy `database/migrations/003_add_scenario.sql`.

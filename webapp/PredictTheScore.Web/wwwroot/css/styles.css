@@ -254,6 +254,38 @@ pre {
   margin: 24px;
 }
 
+.hidden {
+  display: none !important;
+}
+
+.scenario-toolbar,
+.advanced-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-soft);
+}
+
+.scenario-toolbar h3,
+.scenario-toolbar p {
+  margin: 0;
+}
+
+.scenario-toolbar p {
+  margin-top: 8px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.advanced-section {
+  display: block;
+}
+
 .field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -548,6 +580,10 @@ tr + tr td {
   .hero-actions .btn,
   .form-actions .btn {
     width: 100%;
+  }
+
+  .scenario-toolbar {
+    flex-direction: column;
   }
 
   .score-wrapper {

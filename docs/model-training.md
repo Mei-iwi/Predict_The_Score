@@ -21,7 +21,7 @@ Script chính: `scripts/train_model.py`
 3. Chọn scenario, mặc định là `web_minimal`.
 4. Chia train/test với `test_size=0.2`, `random_state=42`.
 5. Train `LinearRegression`.
-6. Lưu model bundle vào `ml-service/artifacts/model.joblib`.
+6. Lưu model bundle vào `ml-service/artifacts/model_<scenario>.joblib`.
 7. Lưu metrics, coefficients, intercept và feature names vào `reports/tables/metrics_web_minimal.json`.
 
 ## Kết quả so sánh
@@ -43,7 +43,18 @@ Theo `reports/tables/model_comparison.csv`:
 ```bash
 python scripts/build_dataset.py
 python scripts/train_model.py --scenario web_minimal
+python scripts/train_model.py --scenario early_warning
+python scripts/train_model.py --scenario reference
 python scripts/evaluate_model.py
 python scripts/compare_models.py
 ```
 
+## Artifact theo scenario
+
+| Scenario | Artifact | Trạng thái trong repo |
+| --- | --- | --- |
+| `web_minimal` | `ml-service/artifacts/model_web_minimal.joblib` | Có |
+| `early_warning` | `ml-service/artifacts/model_early_warning.joblib` | Có |
+| `reference` | `ml-service/artifacts/model_reference.joblib` | Có |
+
+`model.joblib` vẫn được giữ để tương thích API cũ và mặc định dùng cho `web_minimal`.

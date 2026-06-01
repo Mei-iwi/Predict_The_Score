@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS PredictionHistory (
     SchoolSup TINYINT NOT NULL,
     FamSup TINYINT NOT NULL,
     Internet TINYINT NOT NULL,
+    Scenario VARCHAR(50) NULL,
     Note TEXT NULL,
     PredictedScore DECIMAL(5,2) NOT NULL,
     PredictedScore10 DECIMAL(5,2) NOT NULL,

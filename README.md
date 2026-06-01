@@ -70,21 +70,32 @@ Python was not found; run without arguments to install from the Microsoft Store.
 
 hãy cài Python từ trang chính thức `https://www.python.org/downloads/windows/`. Khi cài, chọn **Add python.exe to PATH**. Sau đó đóng terminal cũ, mở terminal mới và kiểm tra lại version.
 
+Nếu Windows vẫn mở Microsoft Store khi gõ `python`, có thể tắt alias tại:
+
+```text
+Settings -> Apps -> Advanced app settings -> App execution aliases
+```
+
+Sau đó tắt `python.exe` và `python3.exe`.
+
 Trong README này, ví dụ dùng `py` vì đây là Python launcher phổ biến trên Windows. Nếu máy bạn không có `py` nhưng có `python`, hãy thay `py` bằng `python`.
 
 ## 3. Cài môi trường Python cho backend và scripts
 
 Chỉ làm một lần đầu tiên, chạy từ **thư mục gốc project**.
 
+Ví dụ đường dẫn project trên máy hiện tại:
+
+- Git Bash: `cd /d/StudyMaterials/HK6/DataMining/Groups/Project/Predict_the_score`
+- PowerShell/CMD: `cd /d D:\StudyMaterials\HK6\DataMining\Groups\Project\Predict_the_score`
+
 ### Cách 1: Git Bash
 
 ```bash
-cd ml-service
-py -m venv .venv
-source .venv/Scripts/activate
+py -m venv ml-service/.venv
+source ml-service/.venv/Scripts/activate
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-cd ..
+python -m pip install -r ml-service/requirements.txt
 ```
 
 Nếu lệnh `py` không chạy trong Git Bash, dùng:
@@ -101,12 +112,10 @@ cd ..
 ### Cách 2: PowerShell
 
 ```powershell
-cd ml-service
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
+py -m venv ml-service\.venv
+.\ml-service\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-cd ..
+python -m pip install -r ml-service\requirements.txt
 ```
 
 Nếu PowerShell chặn activate script, chạy lệnh này rồi activate lại:
@@ -118,12 +127,10 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ### Cách 3: Command Prompt / CMD
 
 ```cmd
-cd ml-service
-py -m venv .venv
-.venv\Scripts\activate.bat
+py -m venv ml-service\.venv
+ml-service\.venv\Scripts\activate.bat
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-cd ..
+python -m pip install -r ml-service\requirements.txt
 ```
 
 ## 4. Kích hoạt lại môi trường ảo sau này
@@ -186,6 +193,8 @@ Git Bash:
 source ml-service/.venv/Scripts/activate
 python scripts/build_dataset.py
 python scripts/train_model.py --scenario web_minimal
+python scripts/train_model.py --scenario early_warning
+python scripts/train_model.py --scenario reference
 python scripts/evaluate_model.py
 python scripts/compare_models.py
 ```
@@ -196,6 +205,8 @@ PowerShell:
 .\ml-service\.venv\Scripts\Activate.ps1
 python scripts/build_dataset.py
 python scripts/train_model.py --scenario web_minimal
+python scripts/train_model.py --scenario early_warning
+python scripts/train_model.py --scenario reference
 python scripts/evaluate_model.py
 python scripts/compare_models.py
 ```
@@ -206,6 +217,8 @@ CMD:
 ml-service\.venv\Scripts\activate.bat
 python scripts/build_dataset.py
 python scripts/train_model.py --scenario web_minimal
+python scripts/train_model.py --scenario early_warning
+python scripts/train_model.py --scenario reference
 python scripts/evaluate_model.py
 python scripts/compare_models.py
 ```
@@ -218,6 +231,14 @@ Các output quan trọng:
 - `reports/tables/model_comparison.csv`
 - `reports/tables/model_coefficients.csv`
 - `ml-service/artifacts/model.joblib`
+
+`model.joblib` vẫn là model mặc định cho `web_minimal`. Project hiện có đủ artifact cho 3 kịch bản:
+
+- `ml-service/artifacts/model_web_minimal.joblib`
+- `ml-service/artifacts/model_early_warning.joblib`
+- `ml-service/artifacts/model_reference.joblib`
+
+Nếu các file này bị xóa hoặc muốn train lại, chạy các lệnh `train_model.py --scenario ...` ở trên.
 
 ## 6. Chạy backend FastAPI
 
@@ -262,6 +283,8 @@ Mở terminal khác, chạy từ **thư mục gốc project**:
 
 ```bash
 cd webapp/PredictTheScore.Web
+dotnet restore
+dotnet build
 dotnet run
 ```
 
@@ -274,8 +297,11 @@ Frontend gửi form đến `/Predict/Submit`, MVC controller gọi FastAPI `/pre
 Chạy từ **thư mục gốc project**:
 
 ```bash
+docker compose config
 docker compose up --build
 ```
+
+Docker Desktop phải được mở và chạy sẵn. Nếu gặp lỗi Docker engine unavailable, hãy mở Docker Desktop và đợi trạng thái ready rồi chạy lại.
 
 Docker Compose có các service:
 
@@ -335,18 +361,80 @@ Request `POST /predict`:
 }
 ```
 
+Request nâng cao có thêm `scenario`. Nếu không gửi `scenario`, API tự dùng `web_minimal`.
+
+`early_warning`:
+
+```json
+{
+  "scenario": "early_warning",
+  "subject": "mat",
+  "studytime": 2,
+  "failures": 0,
+  "absences": 4,
+  "schoolsup": 1,
+  "famsup": 1,
+  "internet": 1,
+  "higher": 1,
+  "traveltime": 2
+}
+```
+
+`reference`:
+
+```json
+{
+  "scenario": "reference",
+  "subject": "mat",
+  "studytime": 2,
+  "failures": 0,
+  "absences": 4,
+  "G1": 12,
+  "G2": 13,
+  "schoolsup": 1,
+  "famsup": 1,
+  "internet": 1,
+  "higher": 1,
+  "traveltime": 2
+}
+```
+
 Response:
 
 ```json
 {
   "predicted_score": 12.8,
+  "predicted_score_20": 12.8,
   "predicted_score_10": 6.4,
-  "model_name": "LinearRegression",
-  "message": "Prediction completed successfully."
+  "model_name": "LinearRegression-web_minimal",
+  "scenario": "web_minimal",
+  "model_scenario": "web_minimal",
+  "message": "Dự đoán thành công."
 }
 ```
 
-## 11. Xử lý lỗi thường gặp
+## 11. Phần mở rộng: lựa chọn kịch bản dự đoán
+
+Ứng dụng hỗ trợ 3 kịch bản:
+
+| Scenario | Tên trên giao diện | Field cần nhập | Ghi chú |
+| --- | --- | --- | --- |
+| `web_minimal` | Dự đoán nhanh | 6 field hiện tại | Mặc định, đơn giản nhất |
+| `early_warning` | Cảnh báo sớm | 6 field + `subject`, `higher`, `traveltime` | Hướng nâng cấp khuyến nghị vì chỉ thêm 3 field |
+| `reference` | Tham chiếu có điểm G1/G2 | 6 field + `subject`, `higher`, `traveltime`, `G1`, `G2` | Có nhiều thông tin hơn nhưng cần biết điểm quá trình |
+
+Frontend mặc định ẩn phần nâng cao. Bấm **Nâng cấp mô hình dự đoán** để chọn scenario và hiển thị field tương ứng.
+
+## 12. Xử lý lỗi thường gặp
+
+| Lỗi | Nguyên nhân | Cách xử lý |
+| --- | --- | --- |
+| `cd: ml-service: No such file or directory` | Đang đứng sai thư mục hoặc đã ở trong `ml-service` | Chạy `ls`/`pwd`, quay về project root trước |
+| `Python was not found` | Python chưa cài hoặc PATH sai | Cài Python từ python.org, tick Add python.exe to PATH, tắt Store alias nếu cần |
+| `bash: ..venvScriptsactivate: command not found` | Dùng cú pháp PowerShell trong Git Bash | Dùng `source .venv/Scripts/activate` |
+| `source ml-service/.venv/Scripts/activate: No such file or directory` | Chưa tạo `.venv` hoặc đang sai thư mục | Tạo lại venv từ project root |
+| `No module named uvicorn` | Chưa activate venv hoặc chưa cài requirements | Activate venv và chạy `python -m pip install -r ml-service/requirements.txt` |
+| Docker engine unavailable | Docker Desktop chưa chạy | Mở Docker Desktop và đợi ready |
 
 ### `bash: cd: ml-service: No such file or directory`
 
@@ -416,8 +504,9 @@ Với PowerShell:
 python -m pip install -r ml-service\requirements.txt
 ```
 
-## 12. Ghi chú báo cáo
+## 13. Ghi chú báo cáo
 
 - Model chính của app là `LinearRegression` với scenario `web_minimal` vì khớp 6 trường đang có trên form web.
-- Scenario `reference` có độ chính xác cao hơn vì dùng thêm `G1`, `G2`, nhưng hiện form web chưa thu thập các điểm này.
+- Scenario `early_warning` là hướng nâng cấp hợp lý vì chỉ thêm `subject`, `higher`, `traveltime`.
+- Scenario `reference` có độ chính xác cao hơn vì dùng thêm `G1`, `G2`, nhưng cần biết điểm quá trình.
 - Các mục cần nhóm tự bổ sung trước khi nộp: tên thành viên thật, ảnh screenshot demo, slide PowerPoint và link commit minh chứng.

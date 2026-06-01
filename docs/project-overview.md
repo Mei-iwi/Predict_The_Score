@@ -29,3 +29,14 @@ Project **Predict The Score** xây dựng một ứng dụng dự đoán điểm
 5. Điểm được giới hạn trong khoảng 0-20 và quy đổi sang thang 10.
 6. MVC lưu lịch sử vào MySQL và trả kết quả về trình duyệt.
 
+## Phần mở rộng: lựa chọn kịch bản dự đoán
+
+Ứng dụng giữ `web_minimal` làm chế độ mặc định để form vẫn đơn giản. Người dùng có thể bấm **Nâng cấp mô hình dự đoán** để chọn thêm kịch bản.
+
+| Scenario | Mục đích | Field bổ sung |
+| --- | --- | --- |
+| `web_minimal` | Dự đoán nhanh với 6 field cơ bản | Không có |
+| `early_warning` | Cảnh báo sớm, chưa cần điểm G1/G2 | `subject`, `higher`, `traveltime` |
+| `reference` | Tham chiếu có điểm quá trình | `subject`, `higher`, `traveltime`, `G1`, `G2` |
+
+Backend chọn model theo scenario. Hiện repo có đủ `model_web_minimal.joblib`, `model_early_warning.joblib` và `model_reference.joblib` trong `ml-service/artifacts/`. Nếu dữ liệu hoặc feature thay đổi, cần train lại các artifact này.

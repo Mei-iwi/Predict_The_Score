@@ -5,7 +5,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-import joblib
+import joblib # type: ignore
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -114,9 +114,11 @@ def main() -> int:
     }
 
     scenario_model_path = ARTIFACT_DIR / f"model_{args.scenario}.joblib"
-    default_model_path = ARTIFACT_DIR / "model.joblib"
     joblib.dump(bundle, scenario_model_path)
-    joblib.dump(bundle, default_model_path)
+    if args.scenario == "web_minimal":
+        # model.joblib là artifact mặc định cho API cũ, chỉ cập nhật bằng web_minimal.
+        default_model_path = ARTIFACT_DIR / "model.joblib"
+        joblib.dump(bundle, default_model_path)
 
     metrics_path = TABLE_DIR / f"metrics_{args.scenario}.json"
     metrics_payload = {
@@ -144,7 +146,8 @@ def main() -> int:
     predictions_df.to_csv(predictions_path, index=False)
 
     print(f"Đã lưu model theo scenario: {scenario_model_path}")
-    print(f"Đã cập nhật model mặc định: {default_model_path}")
+    if args.scenario == "web_minimal":
+        print(f"Đã cập nhật model mặc định: {default_model_path}")
     print(f"Đã lưu metrics: {metrics_path}")
     print(f"Đã lưu dự đoán test set: {predictions_path}")
     print("\nTest metrics:")

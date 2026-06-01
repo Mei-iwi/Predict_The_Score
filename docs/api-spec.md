@@ -85,3 +85,16 @@ Response:
 
 Nếu input sai range hoặc thiếu field, FastAPI trả lỗi `422 Unprocessable Entity`.
 
+## Scenario nâng cao
+
+Field `scenario` là tùy chọn. Nếu không gửi, API dùng `web_minimal`.
+
+| Scenario | Field bắt buộc |
+| --- | --- |
+| `web_minimal` | `studytime`, `failures`, `absences`, `schoolsup`, `famsup`, `internet` |
+| `early_warning` | Các field của `web_minimal` + `subject`, `higher`, `traveltime` |
+| `reference` | Các field của `early_warning` + `G1`, `G2` |
+
+`subject` chỉ nhận `mat` hoặc `por`. `G1`, `G2` nhận số nguyên từ 0 đến 20.
+
+Nếu chọn `early_warning` hoặc `reference` nhưng chưa train artifact tương ứng, API trả `503` với thông báo cần chạy `scripts/train_model.py --scenario <scenario>`.
