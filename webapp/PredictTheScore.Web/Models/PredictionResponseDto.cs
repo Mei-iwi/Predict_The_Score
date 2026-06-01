@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace PredictTheScore.Web.Models.Prediction;
 
-// Nhận kết quả từ fastapi
+// Nhận kết quả từ FastAPI, gồm điểm thang 20 và thang 10.
 public class PredictionResponseDto
 {
     [JsonPropertyName("predicted_score")]

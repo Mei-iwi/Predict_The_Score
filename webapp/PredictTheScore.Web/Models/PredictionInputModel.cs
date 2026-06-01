@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace PredictTheScore.Web.Models.Prediction;
 
-// Nhận dữ liệu từ giao diện web
+// Nhận dữ liệu từ giao diện web và giữ validation khớp với FastAPI.
 public class PredictionInputModel
 {
     [JsonPropertyName("student_name")]

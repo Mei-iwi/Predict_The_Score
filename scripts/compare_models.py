@@ -19,6 +19,7 @@ RANDOM_STATE = 42
 
 
 def load_data() -> tuple[pd.DataFrame, dict]:
+    """Đọc dữ liệu sạch và danh sách scenario để so sánh."""
     data_path = PROCESSED_DIR / "student_performance_clean.csv"
     config_path = PROCESSED_DIR / "feature_config.json"
 
@@ -31,6 +32,7 @@ def load_data() -> tuple[pd.DataFrame, dict]:
 
 
 def compute_metrics(y_true: pd.Series, y_pred) -> dict[str, float]:
+    """Tính MAE, MSE, RMSE và R2 cho từng scenario."""
     mse = float(mean_squared_error(y_true, y_pred))
     return {
         "mae": float(mean_absolute_error(y_true, y_pred)),
@@ -41,6 +43,7 @@ def compute_metrics(y_true: pd.Series, y_pred) -> dict[str, float]:
 
 
 def train_linear_regression(df: pd.DataFrame, target: str, scenario: str, feature_names: list[str]) -> tuple[dict, list[dict]]:
+    """Train LinearRegression cho một scenario và trả metrics cùng coefficients."""
     X = df[feature_names]
     y = df[target]
 
@@ -93,6 +96,7 @@ def main() -> int:
     comparison_rows = []
     coefficient_rows = []
 
+    # So sánh từ form web tối giản đến bộ feature tham chiếu nhiều thông tin hơn.
     for scenario in scenario_names:
         if scenario not in scenarios:
             continue

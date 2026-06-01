@@ -25,6 +25,7 @@ public class PredictionHistoryService : IPredictionHistoryService
             throw new InvalidOperationException("Thiếu ConnectionStrings:DefaultConnection trong appsettings.json");
         }
 
+        // Raw SQL giúp sinh viên dễ thấy bảng PredictionHistory lưu những field nào.
         await using var conn = new MySqlConnection(connectionString);
         await conn.OpenAsync(cancellationToken);
 
@@ -94,6 +95,7 @@ public class PredictionHistoryService : IPredictionHistoryService
             throw new InvalidOperationException("Thiếu ConnectionStrings:DefaultConnection trong appsettings.json");
         }
 
+        // Lấy lịch sử mới nhất để frontend hiển thị ngay sau khi dự đoán.
         var histories = new List<PredictionHistory>();
 
         await using var conn = new MySqlConnection(connectionString);

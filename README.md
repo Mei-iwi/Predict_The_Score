@@ -1,336 +1,163 @@
-# Predict the score
+# Predict The Score
 
-Ứng dụng dự đoán điểm số học sinh với kiến trúc tách thành 2 phần:
+Ứng dụng dự đoán điểm cuối kỳ `G3` của học sinh bằng mô hình hồi quy tuyến tính. Project dùng dữ liệu UCI Student Performance, backend FastAPI, frontend ASP.NET Core MVC và MySQL để lưu lịch sử dự đoán.
 
-- **Frontend:** ASP.NET Core MVC
-- **Backend:** Python FastAPI
+## 1. Mục tiêu
 
----
+- Làm sạch và phân tích dữ liệu học sinh.
+- Huấn luyện mô hình hồi quy để dự đoán điểm `G3` trên thang 20.
+- Hiển thị thêm điểm quy đổi thang 10 trên giao diện web.
+- Lưu lịch sử dự đoán gồm thông tin học sinh, input, điểm dự đoán, model và thời gian tạo.
 
-## Mục lục
+## 2. Kiến trúc
 
-- [Khởi động dự án](#khởi-động-dự-án)
-- [Giới thiệu dự án](#giới-thiệu-dự-án)
-- [Công nghệ sử dụng](#công-nghệ-sử-dụng)
-- [Cấu trúc thư mục](#cấu-trúc-thư-mục)
-- [Mô tả cấu trúc thư mục](#mô-tả-cấu-trúc-thư-mục)
-- [Quy trình chạy hệ thống](#quy-trình-chạy-hệ-thống)
-- [Ghi chú](#ghi-chú)
+```text
+Browser
+  -> ASP.NET Core MVC webapp
+  -> FastAPI ml-service
+  -> LinearRegression model.joblib
 
----
+ASP.NET Core MVC webapp
+  -> MySQL PredictionHistory
+```
 
-## Khởi động dự án
+## 3. Công nghệ
 
-### Cài môi trường ảo và thư viện
+- Python, pandas, scikit-learn, matplotlib, FastAPI, Pydantic, joblib
+- ASP.NET Core MVC, Razor, JavaScript, CSS
+- MySQL, MySqlConnector
+- Docker Compose
 
-Mở git bash hoặc terminal trong dự án
+## 4. Cấu trúc chính
 
-Di chuyển vào backend ml-service
+```text
+data/raw/                         Dữ liệu gốc UCI
+data/processed/                   Dữ liệu sạch và feature_config.json
+scripts/                          Data processing, training, evaluation
+ml-service/                       FastAPI prediction backend
+webapp/PredictTheScore.Web/       ASP.NET Core MVC frontend
+database/schema/                  SQL tạo bảng PredictionHistory
+reports/figures/                  Hình dùng cho báo cáo
+reports/tables/                   Bảng metrics, correlation, comparison
+docs/                             Tài liệu kiến trúc, API, dữ liệu, demo
+tests/manual/                     Checklist kiểm thử thủ công
+```
+
+## 5. Chuẩn bị Python
+
+Tạo môi trường ảo và cài thư viện:
 
 ```bash
 cd ml-service
-```
-
-Kích hoạt môi trường ảo: -> Chỉ chạy cho lần đầu
-
-```bash 
 python -m venv .venv
-```
-
-Cài đặt thư viện cần thiết: -> Chỉ chạy cho lần đầu
-
-```bash
-source .venv/Scripts/activate
+.\.venv\Scripts\activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+cd ..
 ```
 
-### Dữ liệu và tiền xử lý dữ liệu
-
-Tải dữ liệu student Performance từ UCI, lưu vào data/raw/student.zip, kiểm tra và giải nén dữ liệu gốc
+Nếu dùng Git Bash, lệnh kích hoạt có thể là:
 
 ```bash
-python scripts/download_data.py
+source ml-service/.venv/Scripts/activate
 ```
 
-Đọc student-mat.csv, student-por.csv, chọn cột, mã hóa yes/no thành 1/0, làm sạch dữ liệu, tạo student_performance_clean.csv, feature_config.json, audit và biểu đồ Pearson
+## 6. Xử lý dữ liệu và huấn luyện
+
+Chạy từ thư mục gốc project:
 
 ```bash
-python scripts/build_dataset.py 
-```
-
-Đọc dữ liệu sạch, lấy scenario web_minimal, train mô hình LinearRegression, lưu model vào ml-service/artifacts/model.joblib, lưu metrics
-
-```bash
-python scripts/train_model.py 
-```
-Nạp lại model.joblib, đánh giá model trên test set, tạo file evaluation và hình actual_vs_predicted
-
-```bash
+python scripts/build_dataset.py
+python scripts/train_model.py --scenario web_minimal
 python scripts/evaluate_model.py
+python scripts/compare_models.py
 ```
 
-Tạo dữ liệu mẫu sample_input.csv và sample_input.json theo schema web hiện tại
+Các output quan trọng:
+
+- `data/processed/student_performance_clean.csv`
+- `reports/processing_audit.json`
+- `reports/tables/pearson_correlation.csv`
+- `reports/tables/model_comparison.csv`
+- `reports/tables/model_coefficients.csv`
+- `ml-service/artifacts/model.joblib`
+
+## 7. Chạy backend FastAPI
 
 ```bash
-python scripts/export_sample_input.py 
+cd ml-service
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-### Khởi động và tạo CSDL (mysql bằng docker)
+URL kiểm tra:
 
-Chạy docker
+- API root: `http://127.0.0.1:8000`
+- Swagger: `http://127.0.0.1:8000/docs`
+- Health: `http://127.0.0.1:8000/health`
+- Model info: `http://127.0.0.1:8000/model-info`
+
+## 8. Chạy frontend ASP.NET Core MVC
+
+```bash
+cd webapp/PredictTheScore.Web
+dotnet run
+```
+
+Mở URL mà `dotnet run` in ra, thường là `http://localhost:5000` hoặc `https://localhost:5001`.
+
+Frontend gửi form đến `/Predict/Submit`, MVC controller gọi FastAPI `/predict`, sau đó lưu kết quả vào MySQL.
+
+## 9. Chạy bằng Docker Compose
+
 ```bash
 docker compose up --build
 ```
 
-Ngắt docker (-v xóa ổ đĩa lưu trữ)
-```bash
-docker compose down -v
-```
+Docker Compose có các service:
 
-Sử dụng một trình giao diện (wordbench, xml, ...) để truy cập csdl trực quan
-```bash
-hosetname: 127.0.0.1 
-port: 3306
-User: root
-Password: root_password
+- `db`: MySQL
+- `ml-service`: FastAPI backend
+- `webapp`: ASP.NET Core MVC frontend
 
-User: predict_user
-Password: predict_password
-```
+Không đưa mật khẩu thật trong file cấu hình vào báo cáo hoặc slide. Khi trình bày, chỉ mô tả là project dùng connection string local/Docker.
 
-
-> Chạy **Backend trước**, sau đó mới chạy **Frontend**.
-
-### 1) Backend - FastAPI
-
-Di chuyển tới thư mục `ml-service`:
+## 10. Kiểm thử
 
 ```bash
-cd ml-service
+pytest ml-service/tests
+dotnet build webapp/PredictTheScore.Web/PredictTheScore.Web.csproj
 ```
 
-Chạy backend:
+Checklist thủ công nằm ở `tests/manual/test_cases.md`.
 
-```bash
-python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+## 11. API chính
+
+Request `POST /predict`:
+
+```json
+{
+  "studytime": 2,
+  "failures": 0,
+  "absences": 4,
+  "schoolsup": 1,
+  "famsup": 1,
+  "internet": 1
+}
 ```
 
-Sau khi chạy thành công:
+Response:
 
-- **API:** `http://127.0.0.1:8000`
-- **Swagger Docs:** `http://127.0.0.1:8000/docs`
-
----
-
-### 2) Frontend - ASP.NET Core MVC
-
-Di chuyển tới thư mục project web:
-
-```bash
-cd PredictTheScore.Web
+```json
+{
+  "predicted_score": 12.8,
+  "predicted_score_10": 6.4,
+  "model_name": "LinearRegression",
+  "message": "Prediction completed successfully."
+}
 ```
 
-Chạy dự án:
+## 12. Ghi chú báo cáo
 
-```bash
-dotnet run
-```
-
-Hoặc chạy ở chế độ tự theo dõi thay đổi:
-
-```bash
-dotnet watch run
-```
-
----
-
-## Giới thiệu dự án
-
-**Predict the score** là dự án xây dựng ứng dụng dự đoán điểm số học sinh.
-
-Hệ thống được chia thành 2 phần:
-
-- **Frontend ASP.NET Core MVC**: hiển thị giao diện, nhận dữ liệu người dùng nhập và trả kết quả dự đoán.
-- **Backend FastAPI**: nhận request từ frontend, xử lý dữ liệu đầu vào, gọi mô hình học máy và trả kết quả dự đoán qua API.
-
----
-
-## Công nghệ sử dụng
-
-### Frontend
-- ASP.NET Core MVC
-- Razor View
-- CSS
-- JavaScript
-
-### Backend
-- Python
-- FastAPI
-- Uvicorn
-- Pydantic
-- scikit-learn
-- pandas
-- joblib
-
----
-
-## Cấu trúc thư mục
-
-```text
-Predict_the_score/
-├── README.md
-├── .gitignore
-├── docs/
-│   ├── README.md
-│   ├── progress/
-│   │   ├── week-01.md
-│   │   ├── week-02.md
-│   │   └── week-03.md
-│   ├── architecture/
-│   │   └── architecture-overview.md
-│   ├── api/
-│   │   └── predict-api.md
-│   └── database/
-│       └── schema-note.md
-├── data/
-│   ├── raw/
-│   ├── interim/
-│   ├── processed/
-│   └── samples/
-├── notebooks/
-│   ├── 01_profiling.ipynb
-│   ├── 02_preprocessing.ipynb
-│   └── 03_modeling.ipynb
-├── scripts/
-│   ├── download_data.py
-│   ├── build_dataset.py
-│   ├── train_model.py
-│   ├── evaluate_model.py
-│   └── export_sample_input.py
-├── ml-service/
-│   ├── README.md
-│   ├── requirements.txt
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── schemas/
-│   │   │   ├── request.py
-│   │   │   └── response.py
-│   │   ├── services/
-│   │   │   ├── model_loader.py
-│   │   │   ├── predictor.py
-│   │   │   └── preprocessing.py
-│   │   └── utils/
-│   │       └── logger.py
-│   ├── artifacts/
-│   └── tests/
-│       └── test_predict_api.py
-├── webapp/
-│   └── PredictTheScore.Web/
-│       ├── Controllers/
-│       ├── Models/
-│       ├── ViewModels/
-│       ├── Services/
-│       ├── Views/
-│       ├── wwwroot/
-│       ├── appsettings.json
-│       ├── Program.cs
-│       └── PredictTheScore.Web.csproj
-├── database/
-│   ├── schema/
-│   ├── seed/
-│   └── migrations/
-├── tests/
-│   ├── integration/
-│   └── manual/
-└── reports/
-    ├── figures/
-    ├── tables/
-    └── README.md
-```
-
----
-
-## Mô tả cấu trúc thư mục
-
-### `docs/`
-Chứa tài liệu mô tả dự án, tiến độ thực hiện, kiến trúc hệ thống, tài liệu API và ghi chú cơ sở dữ liệu.
-
-### `data/`
-Chứa dữ liệu sử dụng trong quá trình làm đồ án:
-
-- `raw/`: dữ liệu gốc
-- `interim/`: dữ liệu trung gian sau xử lý bước đầu
-- `processed/`: dữ liệu sạch dùng để train/test
-- `samples/`: dữ liệu mẫu phục vụ test nhanh
-
-### `notebooks/`
-Chứa các notebook phân tích dữ liệu, tiền xử lý và thử nghiệm mô hình.
-
-### `scripts/`
-Chứa các script để tự động hóa các bước xử lý dữ liệu, huấn luyện mô hình và đánh giá mô hình.
-
-### `ml-service/`
-Chứa backend Python FastAPI:
-
-- `app/main.py`: file khởi động API
-- `schemas/`: định nghĩa request/response
-- `services/`: xử lý nạp mô hình, tiền xử lý và dự đoán
-- `utils/`: tiện ích hỗ trợ như logger
-- `artifacts/`: nơi lưu model đã train
-- `tests/`: kiểm thử cho backend
-
-### `webapp/PredictTheScore.Web/`
-Chứa frontend ASP.NET Core MVC:
-
-- `Controllers/`: xử lý request từ người dùng
-- `Models/`: mô hình dữ liệu
-- `ViewModels/`: dữ liệu trung gian giữa controller và view
-- `Services/`: lớp gọi API backend
-- `Views/`: giao diện hiển thị
-- `wwwroot/`: CSS, JavaScript, hình ảnh tĩnh
-- `Program.cs`: file cấu hình khởi động ứng dụng
-
-### `database/`
-Chứa tài liệu hoặc script liên quan đến thiết kế cơ sở dữ liệu:
-
-- `schema/`: script khởi tạo bảng
-- `seed/`: dữ liệu mẫu
-- `migrations/`: thay đổi cấu trúc CSDL
-
-### `tests/`
-Chứa các tài liệu và kịch bản kiểm thử tích hợp, kiểm thử thủ công.
-
-### `reports/`
-Chứa hình ảnh, bảng biểu và tài liệu phục vụ báo cáo, slide và minh họa kết quả.
-
----
-
-## Quy trình chạy hệ thống
-
-1. Chạy backend FastAPI.
-2. Kiểm tra backend hoạt động qua `/docs`.
-3. Chạy frontend ASP.NET Core MVC.
-4. Truy cập giao diện web.
-5. Nhập dữ liệu đầu vào.
-6. Frontend gửi dữ liệu sang backend để dự đoán.
-7. Backend trả kết quả dự đoán về frontend để hiển thị.
-
----
-
-## Ghi chú
-
-- Nếu backend chưa chạy, frontend sẽ không lấy được kết quả dự đoán.
-- Nếu thay đổi schema request/response bên backend, cần cập nhật lại phần gọi API bên frontend.
-- Các file model sau khi train nên lưu trong thư mục `ml-service/artifacts/`.
-
----
-
-## Trạng thái hiện tại
-
-Dự án đang được xây dựng theo lộ trình:
-
-- hoàn thiện backend dự đoán
-- hoàn thiện frontend nhập liệu và hiển thị kết quả
-- tích hợp hai hệ thống
-- kiểm thử và đóng gói báo cáo
+- Model chính của app là `LinearRegression` với scenario `web_minimal` vì khớp 6 trường đang có trên form web.
+- Scenario `reference` có độ chính xác cao hơn vì dùng thêm `G1`, `G2`, nhưng hiện form web chưa thu thập các điểm này.
+- Các mục cần nhóm tự bổ sung trước khi nộp: tên thành viên thật, ảnh screenshot demo, slide PowerPoint và link commit minh chứng.

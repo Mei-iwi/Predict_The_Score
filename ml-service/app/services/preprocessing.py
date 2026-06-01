@@ -6,6 +6,7 @@ from app.schemas.request import PredictionRequest
 
 
 def build_input_dataframe(payload: PredictionRequest, feature_names: list[str]) -> pd.DataFrame:
+    """Chuyển request thành DataFrame đúng thứ tự feature mà model đã train."""
     input_values = {
         "studytime": payload.studytime,
         "failures": payload.failures,
@@ -15,6 +16,7 @@ def build_input_dataframe(payload: PredictionRequest, feature_names: list[str]) 
         "internet": payload.internet,
     }
 
+    # Nếu model cần feature chưa có trên form web, API báo lỗi rõ thay vì dự đoán sai.
     missing_features = [name for name in feature_names if name not in input_values]
     if missing_features:
         raise ValueError(f"Request thiếu feature cần cho model: {missing_features}")

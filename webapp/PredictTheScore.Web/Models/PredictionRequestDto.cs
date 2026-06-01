@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace PredictTheScore.Web.Models.Prediction;
 
-// Chỉ chứa dữ liệu gửi sang fastapi
+// Chỉ chứa 6 field model web_minimal cần gửi sang FastAPI.
 public class PredictionRequestDto
 {
     [JsonPropertyName("studytime")]

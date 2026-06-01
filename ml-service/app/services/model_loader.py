@@ -7,6 +7,7 @@ _model_bundle = None
 
 
 def load_model_bundle():
+    """Lazy load model để API không đọc file joblib lặp lại ở mỗi request."""
     global _model_bundle
     if _model_bundle is None:
         if not ARTIFACT_PATH.exists():
@@ -16,6 +17,7 @@ def load_model_bundle():
 
 
 def get_model_info() -> dict:
+    """Chuẩn hóa metadata model cho endpoint /model-info."""
     bundle = load_model_bundle()
     scenario = bundle.get("scenario", "unknown")
     model_name = bundle.get("model_name", "LinearRegression")

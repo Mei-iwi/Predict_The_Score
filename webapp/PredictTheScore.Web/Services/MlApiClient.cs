@@ -19,6 +19,7 @@ public class MlApiClient : IMlApiClient
 
         try
         {
+            // Gọi FastAPI bằng JSON để giữ contract giống Swagger của backend ML.
             var response = await _httpClient.PostAsJsonAsync(endpoint, request, cancellationToken);
             var rawBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
@@ -31,7 +32,7 @@ public class MlApiClient : IMlApiClient
             var result = await response.Content.ReadFromJsonAsync<PredictionResponseDto>(cancellationToken: cancellationToken);
             if (result == null)
             {
-                throw new InvalidOperationException("ML API tra ve du lieu rong");
+                throw new InvalidOperationException("ML API trả về dữ liệu rỗng");
             }
 
             return result;
@@ -39,12 +40,12 @@ public class MlApiClient : IMlApiClient
         catch (TaskCanceledException ex)
         {
             _logger.LogError(ex, "Timeout when calling ML API");
-            throw new InvalidOperationException("Qua thoi gian cho phan hoi tu ML API");
+            throw new InvalidOperationException("Quá thời gian chờ phản hồi từ ML API");
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Cannot connect to ML API");
-            throw new InvalidOperationException("Khong ket noi duoc backend ML");
+            throw new InvalidOperationException("Không kết nối được backend ML");
         }
     }
 }

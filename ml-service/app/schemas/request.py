@@ -2,6 +2,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class PredictionRequest(BaseModel):
+    """Input đúng với 6 trường hiện có trên form web."""
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {

@@ -6,6 +6,7 @@ const APP_CONFIG = {
 
 document.addEventListener('DOMContentLoaded', () => {
   async function loadHistoryFromDatabase() {
+    // Tải history từ MVC endpoint; nếu database trống thì render trạng thái rỗng.
     if (!historyBody) return;
 
     try {
@@ -155,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function validateIntegerRange(value, min, max, label) {
+    // Giữ range phía frontend khớp với Pydantic validation ở FastAPI.
     if (value === '') return `Vui lòng nhập ${label.toLowerCase()}.`;
     const numeric = Number(value);
     if (!Number.isInteger(numeric)) return `${label} phải là số nguyên.`;
@@ -186,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getPayload() {
+    // Payload gửi đến MVC dùng snake_case để map rõ sang DTO/API backend.
     return {
       student_name: fields.studentName.input.value.trim(),
       class_name: fields.className.input.value.trim(),
@@ -217,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function postPrediction(payload) {
+    // AbortController giúp giao diện không treo nếu ML backend chưa chạy.
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), APP_CONFIG.requestTimeoutMs);
 
@@ -258,6 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function normalizeResponse(data, payload) {
+    // Chấp nhận vài tên field cũ để frontend không vỡ khi backend thay đổi nhẹ.
     const score20 = pickNumber(data, [
       'predicted_score',
       'predictedScore',
@@ -417,6 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function handleSubmit(event) {
     event.preventDefault();
 
+    // Luồng chính: validate form -> gọi MVC -> normalize response -> lưu/refresh history.
     if (!validateForm()) {
       setUiState('error', 'Biểu mẫu còn lỗi. Vui lòng kiểm tra lại các trường dữ liệu.');
       return;

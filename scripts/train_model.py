@@ -24,6 +24,7 @@ ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def load_processed_data() -> tuple[pd.DataFrame, dict]:
+    """Đọc dữ liệu sạch và cấu hình feature do build_dataset.py tạo ra."""
     data_path = PROCESSED_DIR / "student_performance_clean.csv"
     feature_config_path = PROCESSED_DIR / "feature_config.json"
     if not data_path.exists():
@@ -37,6 +38,7 @@ def load_processed_data() -> tuple[pd.DataFrame, dict]:
 
 
 def compute_metrics(y_true: pd.Series, y_pred: pd.Series) -> dict[str, float]:
+    """Tính các metric hồi quy cơ bản để so sánh train/test."""
     mse = float(mean_squared_error(y_true, y_pred))
     return {
         "mae": float(mean_absolute_error(y_true, y_pred)),
@@ -72,6 +74,7 @@ def main() -> int:
     X = df[feature_names].copy()
     y = df[target].copy()
 
+    # test_size=0.2 giữ 20% dữ liệu để kiểm tra; random_state giúp kết quả lặp lại được.
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
@@ -90,6 +93,7 @@ def main() -> int:
 
     created_at = datetime.now(timezone.utc).isoformat()
 
+    # Bundle lưu cả model và metadata để FastAPI biết feature order, target và metrics.
     bundle = {
         "model": model,
         "model_name": "LinearRegression",

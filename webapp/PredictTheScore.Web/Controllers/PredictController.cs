@@ -20,6 +20,7 @@ public class PredictController : Controller
     [HttpPost("Submit")]
     public async Task<IActionResult> Submit([FromBody] PredictionInputModel input, CancellationToken cancellationToken)
     {
+        // MVC nhận dữ liệu từ form web, kiểm tra validation rồi chỉ gửi 6 field model cần sang FastAPI.
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
@@ -38,6 +39,7 @@ public class PredictController : Controller
         try
         {
             var prediction = await _mlApiClient.PredictAsync(mlRequest, cancellationToken);
+            // Backend ML đã trả thang 10; dòng fallback giữ UI ổn nếu backend cũ chưa có field này.
             var predictedScore10 = prediction.PredictedScore10 > 0
                 ? prediction.PredictedScore10
                 : Math.Round(prediction.PredictedScore / 2, 2);
@@ -71,6 +73,7 @@ public class PredictController : Controller
        [FromQuery] int take = 10,
        CancellationToken cancellationToken = default)
     {
+        // History được dùng để giao diện tải lại các lần dự đoán gần nhất từ MySQL.
         var histories = await _historyService.GetLatestAsync(take, cancellationToken);
 
         var result = histories.Select(x => new

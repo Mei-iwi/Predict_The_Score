@@ -15,11 +15,13 @@ REPORT_DIR = PROJECT_ROOT / "reports"
 FIG_DIR = REPORT_DIR / "figures"
 TABLE_DIR = REPORT_DIR / "tables"
 
+# Các thư mục output được tạo tự động để script chạy được từ project root.
 DATA_PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 REPORT_DIR.mkdir(parents=True, exist_ok=True)
 FIG_DIR.mkdir(parents=True, exist_ok=True)
 TABLE_DIR.mkdir(parents=True, exist_ok=True)
 
+# Các cột này vừa phục vụ phân tích dữ liệu, vừa tạo feature cho các scenario model.
 USE_COLS = [
     "studytime",
     "failures",
@@ -53,7 +55,7 @@ def basename_in_zip(member_name: str) -> str:
 
 
 def find_file_bytes_in_zip_bytes(zip_bytes: bytes, expected_name: str) -> bytes:
-    """Find a file in a zip archive, including nested zip archives."""
+    """Tìm file CSV trong zip, kể cả trường hợp UCI đặt CSV trong zip lồng nhau."""
     with ZipFile(BytesIO(zip_bytes), "r") as archive:
         for name in archive.namelist():
             if not name.endswith("/") and basename_in_zip(name) == expected_name:
@@ -81,7 +83,7 @@ def load_csv_from_zip(zip_path: Path, member_name: str) -> pd.DataFrame:
 
 
 def find_raw_sources() -> tuple[pd.DataFrame, pd.DataFrame, str]:
-    """Find student-mat.csv and student-por.csv in common project locations."""
+    """Tìm hai file dữ liệu gốc ở các vị trí thường dùng trong project."""
     csv_candidates = [
         (DATA_RAW_DIR / "student-mat.csv", DATA_RAW_DIR / "student-por.csv", "data/raw"),
         (
@@ -114,6 +116,7 @@ def find_raw_sources() -> tuple[pd.DataFrame, pd.DataFrame, str]:
 
 
 def preprocess_student_performance() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
+    """Làm sạch dữ liệu và tạo audit để đưa trực tiếp vào báo cáo."""
     mat, por, source_label = find_raw_sources()
 
     mat = mat.copy()
@@ -132,9 +135,11 @@ def preprocess_student_performance() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     df = df.drop_duplicates().reset_index(drop=True)
     rows_after_dropping_duplicates = len(df)
 
+    # Ép kiểu trước khi kiểm tra missing để phát hiện giá trị không chuyển được sang số.
     for col in NUMERIC_COLS:
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
+    # Dataset dùng yes/no; model cần số nên mã hóa yes=1, no=0.
     binary_map = {"yes": 1, "no": 0}
     invalid_binary_counts = {}
     for col in BINARY_COLS:
@@ -179,6 +184,7 @@ def preprocess_student_performance() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
         "traveltime",
         "G3",
     ]
+    # Pearson dùng để giải thích mức liên hệ tuyến tính giữa từng biến và điểm G3.
     pearson_corr = df_clean[corr_cols].corr(method="pearson", numeric_only=True)
 
     audit = {
@@ -201,6 +207,7 @@ def preprocess_student_performance() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
 
 
 def save_feature_config() -> None:
+    """Lưu các nhóm feature để train, compare và backend dùng cùng một cấu hình."""
     feature_config = {
         "target": "G3",
         "scenarios": {
@@ -250,6 +257,7 @@ def save_feature_config() -> None:
 
 
 def save_figures(df_clean: pd.DataFrame, pearson_corr: pd.DataFrame) -> None:
+    """Sinh hình phân tích dữ liệu dùng cho báo cáo và slide."""
     plt.figure(figsize=(10, 8))
     image = plt.imshow(pearson_corr, interpolation="nearest", cmap="viridis")
     plt.colorbar(image)
@@ -280,6 +288,7 @@ def save_figures(df_clean: pd.DataFrame, pearson_corr: pd.DataFrame) -> None:
 
 
 def save_outputs(df_clean: pd.DataFrame, pearson_corr: pd.DataFrame, audit: dict) -> None:
+    """Ghi toàn bộ output của bước preprocessing ra data/processed và reports/."""
     clean_path = DATA_PROCESSED_DIR / "student_performance_clean.csv"
     pearson_path = TABLE_DIR / "pearson_correlation.csv"
     audit_path = REPORT_DIR / "processing_audit.json"

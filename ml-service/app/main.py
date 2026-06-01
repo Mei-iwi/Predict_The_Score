@@ -12,7 +12,7 @@ async def lifespan(app: FastAPI):
     try:
         load_model_bundle()
     except FileNotFoundError:
-        # The /health endpoint should still be available before training runs.
+        # Cho phép /health vẫn chạy dù nhóm chưa train model.joblib.
         pass
     yield
 
@@ -32,6 +32,7 @@ def root():
 
 @app.get("/health")
 def health():
+    """Endpoint kiểm tra backend và trạng thái nạp model."""
     try:
         load_model_bundle()
         return {"status": "ok", "model_loaded": True}
@@ -41,11 +42,13 @@ def health():
 
 @app.get("/model-info", response_model=ModelInfoResponse)
 def model_info():
+    """Trả metadata của model để Swagger và báo cáo dễ kiểm chứng."""
     return get_model_info()
 
 
 @app.post("/predict", response_model=PredictionResponse)
 def predict(payload: PredictionRequest):
+    """Dự đoán điểm G3 thang 20 và quy đổi sang thang 10 cho frontend."""
     predicted_score = round(predict_score(payload), 2)
     predicted_score_10 = round(predicted_score / 2, 2)
     info = get_model_info()

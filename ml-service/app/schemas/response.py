@@ -4,6 +4,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class PredictionResponse(BaseModel):
+    """Response chính của /predict, hiển thị rõ cả thang 20 và thang 10."""
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -22,6 +24,8 @@ class PredictionResponse(BaseModel):
 
 
 class ModelInfoResponse(BaseModel):
+    """Thông tin model đang được backend phục vụ."""
+
     model_name: str
     scenario: str
     feature_names: list[str]
