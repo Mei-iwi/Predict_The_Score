@@ -3,9 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace PredictTheScore.Web.Models.Prediction;
 
-// Nhận dữ liệu từ giao diện web
+// Nhận dữ liệu từ giao diện web và giữ validation khớp với FastAPI.
 public class PredictionInputModel
 {
+    [JsonPropertyName("scenario")]
+    public string Scenario { get; set; } = "web_minimal";
+
     [JsonPropertyName("student_name")]
     public string? StudentName { get; set; }
     [JsonPropertyName("class_name")]
@@ -46,6 +49,24 @@ public class PredictionInputModel
     [Range(0, 1, ErrorMessage = "Internet chỉ nhận 0 hoặc 1")]
     public int Internet { get; set; }
 
+    [JsonPropertyName("subject")]
+    public string? Subject { get; set; }
+
+    [JsonPropertyName("higher")]
+    [Range(0, 1, ErrorMessage = "Higher chỉ nhận 0 hoặc 1")]
+    public int? Higher { get; set; }
+
+    [JsonPropertyName("traveltime")]
+    [Range(1, 4, ErrorMessage = "Traveltime phải từ 1 đến 4")]
+    public int? Traveltime { get; set; }
+
+    [JsonPropertyName("G1")]
+    [Range(0, 20, ErrorMessage = "G1 phải từ 0 đến 20")]
+    public int? G1 { get; set; }
+
+    [JsonPropertyName("G2")]
+    [Range(0, 20, ErrorMessage = "G2 phải từ 0 đến 20")]
+    public int? G2 { get; set; }
 
     [JsonPropertyName("note")]
     public string? Note { get; set; }

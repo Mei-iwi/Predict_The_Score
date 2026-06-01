@@ -6,7 +6,8 @@ from app.services.preprocessing import build_input_dataframe
 
 
 def predict_score(payload: PredictionRequest) -> float:
-    bundle = load_model_bundle()
+    """Tạo dataframe đúng thứ tự feature, dự đoán và chặn điểm trong khoảng 0-20."""
+    bundle = load_model_bundle(payload.scenario)
 
     model = bundle["model"]
     feature_names = bundle.get("feature_names", [

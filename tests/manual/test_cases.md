@@ -32,3 +32,25 @@
 - Submit a valid prediction.
 - Compare the two displayed scores.
 - Expected result: the 10-point score equals the 20-point score divided by 2, rounded to two decimal places.
+
+## 6. Advanced mode visibility
+- Open the web app.
+- Expected result: default form shows only the 6 `web_minimal` fields.
+- Click "Nâng cấp mô hình dự đoán".
+- Expected result: scenario selector appears.
+
+## 7. early_warning scenario
+- Select `early_warning`.
+- Expected result: the form shows `subject`, `higher`, and `traveltime`.
+- Submit valid input if `model_early_warning.joblib` exists.
+- Expected result: prediction returns selected scenario, or a clear message says the model artifact must be trained.
+
+## 8. reference scenario
+- Select `reference`.
+- Expected result: the form shows `subject`, `higher`, `traveltime`, `G1`, and `G2`.
+- Submit valid input if `model_reference.joblib` exists.
+- Expected result: prediction returns selected scenario, or a clear message says the model artifact must be trained.
+
+## 9. Switch back to web_minimal
+- Select `web_minimal` or reset the form.
+- Expected result: advanced fields are hidden and quick prediction still works.

@@ -20,6 +20,8 @@ public class PredictionHistory
 
     public int Internet { get; set; }
 
+    public string? Scenario { get; set; }
+
     public string? Note { get; set; }
 
     public decimal PredictedScore { get; set; }

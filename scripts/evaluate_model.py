@@ -21,6 +21,7 @@ FIG_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def compute_metrics(y_true: pd.Series, y_pred: pd.Series) -> dict[str, float]:
+    """Tính metric trên test set đã lưu trong model bundle."""
     mse = float(mean_squared_error(y_true, y_pred))
     return {
         "mae": float(mean_absolute_error(y_true, y_pred)),
@@ -47,6 +48,7 @@ def main() -> int:
     if not processed_path.exists():
         raise FileNotFoundError(f"Không tìm thấy dữ liệu sạch: {processed_path}")
 
+    # Nạp lại dữ liệu sạch và model để đánh giá đúng model đang phục vụ API.
     df = pd.read_csv(processed_path)
     bundle = joblib.load(args.model_path)
 
@@ -59,6 +61,7 @@ def main() -> int:
     if not test_indices:
         raise ValueError("Model bundle không có test_indices để đánh giá lại.")
 
+    # test_indices được lưu khi train để evaluation dùng cùng tập test.
     test_df = df.loc[test_indices].copy()
     X_test = test_df[feature_names]
     y_test = test_df[target]
@@ -86,6 +89,7 @@ def main() -> int:
     detail_path = TABLE_DIR / f"evaluation_detail_{scenario}.csv"
     detail_df.to_csv(detail_path, index=False)
 
+    # Hình actual-vs-predicted giúp báo cáo trực quan hóa sai số dự đoán.
     plt.figure(figsize=(6, 5))
     plt.scatter(y_test, y_pred, alpha=0.7, color="teal", edgecolor="black")
     plt.xlabel("Giá trị thật G3")

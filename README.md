@@ -1,336 +1,512 @@
-# Predict the score
+# Predict The Score
 
-Ứng dụng dự đoán điểm số học sinh với kiến trúc tách thành 2 phần:
+Ứng dụng dự đoán điểm cuối kỳ `G3` của học sinh bằng mô hình hồi quy tuyến tính. Project dùng dữ liệu UCI Student Performance, backend FastAPI, frontend ASP.NET Core MVC và MySQL để lưu lịch sử dự đoán.
 
-- **Frontend:** ASP.NET Core MVC
-- **Backend:** Python FastAPI
+## 1. Lưu ý trước khi chạy
 
----
+Luôn mở terminal tại **thư mục gốc của project**. Thư mục gốc là thư mục chứa các file/thư mục sau:
 
-## Mục lục
+```text
+ml-service/
+webapp/
+scripts/
+data/
+reports/
+docker-compose.yml
+README.md
+```
 
-- [Khởi động dự án](#khởi-động-dự-án)
-- [Giới thiệu dự án](#giới-thiệu-dự-án)
-- [Công nghệ sử dụng](#công-nghệ-sử-dụng)
-- [Cấu trúc thư mục](#cấu-trúc-thư-mục)
-- [Mô tả cấu trúc thư mục](#mô-tả-cấu-trúc-thư-mục)
-- [Quy trình chạy hệ thống](#quy-trình-chạy-hệ-thống)
-- [Ghi chú](#ghi-chú)
+Kiểm tra nhanh đang ở đúng thư mục gốc:
 
----
+```bash
+ls
+```
 
-## Khởi động dự án
+Nếu thấy `ml-service`, `webapp`, `scripts`, `data`, `reports`, `docker-compose.yml` thì đúng.
 
-### Cài môi trường ảo và thư viện
+Các lỗi thường gặp:
 
-Mở git bash hoặc terminal trong dự án
+- Nếu đang ở thư mục gốc thì mới chạy `cd ml-service`.
+- Nếu đã ở trong `ml-service` rồi thì **không chạy lại** `cd ml-service`, vì sẽ bị lỗi `No such file or directory`.
+- Trong Git Bash, lệnh kiểu Windows `.\.venv\Scripts\activate` là sai.
+- Trong Git Bash, dùng `source .venv/Scripts/activate` nếu đang ở `ml-service`.
+- Trong Git Bash, dùng `source ml-service/.venv/Scripts/activate` nếu đang ở thư mục gốc.
+- Trong PowerShell, dùng `.\.venv\Scripts\Activate.ps1`.
+- Trong Command Prompt/CMD, dùng `.venv\Scripts\activate.bat`.
 
-Di chuyển vào backend ml-service
+## 2. Kiểm tra Python trên Windows
+
+Trên Windows có thể có `py`, `python` hoặc `python3`. Chỉ cần một lệnh chạy được là đủ.
+
+### Git Bash
+
+```bash
+py --version
+python --version
+python3 --version
+```
+
+### PowerShell
+
+```powershell
+py --version
+python --version
+python3 --version
+```
+
+### Command Prompt / CMD
+
+```cmd
+py --version
+python --version
+python3 --version
+```
+
+Nếu gặp lỗi:
+
+```text
+Python was not found; run without arguments to install from the Microsoft Store...
+```
+
+hãy cài Python từ trang chính thức `https://www.python.org/downloads/windows/`. Khi cài, chọn **Add python.exe to PATH**. Sau đó đóng terminal cũ, mở terminal mới và kiểm tra lại version.
+
+Nếu Windows vẫn mở Microsoft Store khi gõ `python`, có thể tắt alias tại:
+
+```text
+Settings -> Apps -> Advanced app settings -> App execution aliases
+```
+
+Sau đó tắt `python.exe` và `python3.exe`.
+
+Trong README này, ví dụ dùng `py` vì đây là Python launcher phổ biến trên Windows. Nếu máy bạn không có `py` nhưng có `python`, hãy thay `py` bằng `python`.
+
+## 3. Cài môi trường Python cho backend và scripts
+
+Chỉ làm một lần đầu tiên, chạy từ **thư mục gốc project**.
+
+Ví dụ đường dẫn project trên máy hiện tại:
+
+- Git Bash: `cd /d/StudyMaterials/HK6/DataMining/Groups/Project/Predict_the_score`
+- PowerShell/CMD: `cd /d D:\StudyMaterials\HK6\DataMining\Groups\Project\Predict_the_score`
+
+### Cách 1: Git Bash
+
+```bash
+py -m venv ml-service/.venv
+source ml-service/.venv/Scripts/activate
+python -m pip install --upgrade pip
+python -m pip install -r ml-service/requirements.txt
+```
+
+Nếu lệnh `py` không chạy trong Git Bash, dùng:
 
 ```bash
 cd ml-service
-```
-
-Kích hoạt môi trường ảo: -> Chỉ chạy cho lần đầu
-
-```bash 
 python -m venv .venv
-```
-
-Cài đặt thư viện cần thiết: -> Chỉ chạy cho lần đầu
-
-```bash
 source .venv/Scripts/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+cd ..
 ```
 
-### Dữ liệu và tiền xử lý dữ liệu
+### Cách 2: PowerShell
 
-Tải dữ liệu student Performance từ UCI, lưu vào data/raw/student.zip, kiểm tra và giải nén dữ liệu gốc
-
-```bash
-python scripts/download_data.py
+```powershell
+py -m venv ml-service\.venv
+.\ml-service\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r ml-service\requirements.txt
 ```
 
-Đọc student-mat.csv, student-por.csv, chọn cột, mã hóa yes/no thành 1/0, làm sạch dữ liệu, tạo student_performance_clean.csv, feature_config.json, audit và biểu đồ Pearson
+Nếu PowerShell chặn activate script, chạy lệnh này rồi activate lại:
 
-```bash
-python scripts/build_dataset.py 
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-Đọc dữ liệu sạch, lấy scenario web_minimal, train mô hình LinearRegression, lưu model vào ml-service/artifacts/model.joblib, lưu metrics
+### Cách 3: Command Prompt / CMD
 
-```bash
-python scripts/train_model.py 
+```cmd
+py -m venv ml-service\.venv
+ml-service\.venv\Scripts\activate.bat
+python -m pip install --upgrade pip
+python -m pip install -r ml-service\requirements.txt
 ```
-Nạp lại model.joblib, đánh giá model trên test set, tạo file evaluation và hình actual_vs_predicted
+
+## 4. Kích hoạt lại môi trường ảo sau này
+
+Nếu đã tạo `.venv` rồi, lần sau chỉ cần activate.
+
+### Nếu đang ở thư mục gốc project
+
+Git Bash:
 
 ```bash
+source ml-service/.venv/Scripts/activate
+```
+
+PowerShell:
+
+```powershell
+.\ml-service\.venv\Scripts\Activate.ps1
+```
+
+CMD:
+
+```cmd
+ml-service\.venv\Scripts\activate.bat
+```
+
+### Nếu đang ở thư mục `ml-service`
+
+Git Bash:
+
+```bash
+source .venv/Scripts/activate
+```
+
+PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+CMD:
+
+```cmd
+.venv\Scripts\activate.bat
+```
+
+Nếu bị lỗi `No such file or directory`, nghĩa là `.venv` chưa được tạo hoặc bạn đang đứng sai thư mục. Hãy quay về thư mục gốc và chạy lại phần cài môi trường.
+
+## 5. Xử lý dữ liệu và huấn luyện model
+
+Chạy từ **thư mục gốc project** sau khi đã cài thư viện Python:
+
+### Git Bash / PowerShell / CMD
+
+Kích hoạt môi trường ảo trước, sau đó chạy scripts từ thư mục gốc.
+
+Git Bash:
+
+```bash
+source ml-service/.venv/Scripts/activate
+python scripts/build_dataset.py
+python scripts/train_model.py --scenario web_minimal
+python scripts/train_model.py --scenario early_warning
+python scripts/train_model.py --scenario reference
 python scripts/evaluate_model.py
+python scripts/compare_models.py
 ```
 
-Tạo dữ liệu mẫu sample_input.csv và sample_input.json theo schema web hiện tại
+PowerShell:
 
-```bash
-python scripts/export_sample_input.py 
+```powershell
+.\ml-service\.venv\Scripts\Activate.ps1
+python scripts/build_dataset.py
+python scripts/train_model.py --scenario web_minimal
+python scripts/train_model.py --scenario early_warning
+python scripts/train_model.py --scenario reference
+python scripts/evaluate_model.py
+python scripts/compare_models.py
 ```
 
-### Khởi động và tạo CSDL (mysql bằng docker)
+CMD:
 
-Chạy docker
-```bash
-docker compose up --build
+```cmd
+ml-service\.venv\Scripts\activate.bat
+python scripts/build_dataset.py
+python scripts/train_model.py --scenario web_minimal
+python scripts/train_model.py --scenario early_warning
+python scripts/train_model.py --scenario reference
+python scripts/evaluate_model.py
+python scripts/compare_models.py
 ```
 
-Ngắt docker (-v xóa ổ đĩa lưu trữ)
+Các output quan trọng:
+
+- `data/processed/student_performance_clean.csv`
+- `reports/processing_audit.json`
+- `reports/tables/pearson_correlation.csv`
+- `reports/tables/model_comparison.csv`
+- `reports/tables/model_coefficients.csv`
+- `ml-service/artifacts/model.joblib`
+
+`model.joblib` vẫn là model mặc định cho `web_minimal`. Project hiện có đủ artifact cho 3 kịch bản:
+
+- `ml-service/artifacts/model_web_minimal.joblib`
+- `ml-service/artifacts/model_early_warning.joblib`
+- `ml-service/artifacts/model_reference.joblib`
+
+Nếu các file này bị xóa hoặc muốn train lại, chạy các lệnh `train_model.py --scenario ...` ở trên.
+
+## 6. Chạy backend FastAPI
+
+Mở terminal mới, chạy từ **thư mục gốc project**.
+
+### Git Bash
+
 ```bash
-docker compose down -v
-```
-
-Sử dụng một trình giao diện (wordbench, xml, ...) để truy cập csdl trực quan
-```bash
-hosetname: 127.0.0.1 
-port: 3306
-User: root
-Password: root_password
-
-User: predict_user
-Password: predict_password
-```
-
-
-> Chạy **Backend trước**, sau đó mới chạy **Frontend**.
-
-### 1) Backend - FastAPI
-
-Di chuyển tới thư mục `ml-service`:
-
-```bash
+source ml-service/.venv/Scripts/activate
 cd ml-service
-```
-
-Chạy backend:
-
-```bash
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Sau khi chạy thành công:
+### PowerShell
 
-- **API:** `http://127.0.0.1:8000`
-- **Swagger Docs:** `http://127.0.0.1:8000/docs`
-
----
-
-### 2) Frontend - ASP.NET Core MVC
-
-Di chuyển tới thư mục project web:
-
-```bash
-cd PredictTheScore.Web
+```powershell
+.\ml-service\.venv\Scripts\Activate.ps1
+cd ml-service
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Chạy dự án:
+### CMD
+
+```cmd
+ml-service\.venv\Scripts\activate.bat
+cd ml-service
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Nếu lệnh `python` không chạy sau khi activate, hãy kiểm tra lại bước tạo `.venv`.
+
+URL kiểm tra:
+
+- API root: `http://127.0.0.1:8000`
+- Swagger: `http://127.0.0.1:8000/docs`
+- Health: `http://127.0.0.1:8000/health`
+- Model info: `http://127.0.0.1:8000/model-info`
+
+## 7. Chạy frontend ASP.NET Core MVC
+
+Mở terminal khác, chạy từ **thư mục gốc project**:
 
 ```bash
+cd webapp/PredictTheScore.Web
+dotnet restore
+dotnet build
 dotnet run
 ```
 
-Hoặc chạy ở chế độ tự theo dõi thay đổi:
+Mở URL mà `dotnet run` in ra, thường là `http://localhost:5000` hoặc `https://localhost:5001`.
+
+Frontend gửi form đến `/Predict/Submit`, MVC controller gọi FastAPI `/predict`, sau đó lưu kết quả vào MySQL nếu database đang chạy.
+
+## 8. Chạy bằng Docker Compose
+
+Chạy từ **thư mục gốc project**:
 
 ```bash
-dotnet watch run
+docker compose config
+docker compose up --build
 ```
 
----
+Docker Desktop phải được mở và chạy sẵn. Nếu gặp lỗi Docker engine unavailable, hãy mở Docker Desktop và đợi trạng thái ready rồi chạy lại.
 
-## Giới thiệu dự án
+Docker Compose có các service:
 
-**Predict the score** là dự án xây dựng ứng dụng dự đoán điểm số học sinh.
+- `db`: MySQL
+- `ml-service`: FastAPI backend
+- `webapp`: ASP.NET Core MVC frontend
 
-Hệ thống được chia thành 2 phần:
+Không đưa mật khẩu thật trong file cấu hình vào báo cáo hoặc slide. Khi trình bày, chỉ mô tả là project dùng connection string local/Docker.
 
-- **Frontend ASP.NET Core MVC**: hiển thị giao diện, nhận dữ liệu người dùng nhập và trả kết quả dự đoán.
-- **Backend FastAPI**: nhận request từ frontend, xử lý dữ liệu đầu vào, gọi mô hình học máy và trả kết quả dự đoán qua API.
+## 9. Kiểm thử
 
----
+Chạy từ **thư mục gốc project**.
 
-## Công nghệ sử dụng
+Backend tests:
 
-### Frontend
-- ASP.NET Core MVC
-- Razor View
-- CSS
-- JavaScript
+Git Bash:
 
-### Backend
-- Python
-- FastAPI
-- Uvicorn
-- Pydantic
-- scikit-learn
-- pandas
-- joblib
-
----
-
-## Cấu trúc thư mục
-
-```text
-Predict_the_score/
-├── README.md
-├── .gitignore
-├── docs/
-│   ├── README.md
-│   ├── progress/
-│   │   ├── week-01.md
-│   │   ├── week-02.md
-│   │   └── week-03.md
-│   ├── architecture/
-│   │   └── architecture-overview.md
-│   ├── api/
-│   │   └── predict-api.md
-│   └── database/
-│       └── schema-note.md
-├── data/
-│   ├── raw/
-│   ├── interim/
-│   ├── processed/
-│   └── samples/
-├── notebooks/
-│   ├── 01_profiling.ipynb
-│   ├── 02_preprocessing.ipynb
-│   └── 03_modeling.ipynb
-├── scripts/
-│   ├── download_data.py
-│   ├── build_dataset.py
-│   ├── train_model.py
-│   ├── evaluate_model.py
-│   └── export_sample_input.py
-├── ml-service/
-│   ├── README.md
-│   ├── requirements.txt
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── schemas/
-│   │   │   ├── request.py
-│   │   │   └── response.py
-│   │   ├── services/
-│   │   │   ├── model_loader.py
-│   │   │   ├── predictor.py
-│   │   │   └── preprocessing.py
-│   │   └── utils/
-│   │       └── logger.py
-│   ├── artifacts/
-│   └── tests/
-│       └── test_predict_api.py
-├── webapp/
-│   └── PredictTheScore.Web/
-│       ├── Controllers/
-│       ├── Models/
-│       ├── ViewModels/
-│       ├── Services/
-│       ├── Views/
-│       ├── wwwroot/
-│       ├── appsettings.json
-│       ├── Program.cs
-│       └── PredictTheScore.Web.csproj
-├── database/
-│   ├── schema/
-│   ├── seed/
-│   └── migrations/
-├── tests/
-│   ├── integration/
-│   └── manual/
-└── reports/
-    ├── figures/
-    ├── tables/
-    └── README.md
+```bash
+source ml-service/.venv/Scripts/activate
+python -m pytest ml-service/tests
 ```
 
----
+PowerShell:
 
-## Mô tả cấu trúc thư mục
+```powershell
+.\ml-service\.venv\Scripts\Activate.ps1
+python -m pytest ml-service/tests
+```
 
-### `docs/`
-Chứa tài liệu mô tả dự án, tiến độ thực hiện, kiến trúc hệ thống, tài liệu API và ghi chú cơ sở dữ liệu.
+CMD:
 
-### `data/`
-Chứa dữ liệu sử dụng trong quá trình làm đồ án:
+```cmd
+ml-service\.venv\Scripts\activate.bat
+python -m pytest ml-service/tests
+```
 
-- `raw/`: dữ liệu gốc
-- `interim/`: dữ liệu trung gian sau xử lý bước đầu
-- `processed/`: dữ liệu sạch dùng để train/test
-- `samples/`: dữ liệu mẫu phục vụ test nhanh
+Build frontend:
 
-### `notebooks/`
-Chứa các notebook phân tích dữ liệu, tiền xử lý và thử nghiệm mô hình.
+```bash
+dotnet build webapp/PredictTheScore.Web/PredictTheScore.Web.csproj
+```
 
-### `scripts/`
-Chứa các script để tự động hóa các bước xử lý dữ liệu, huấn luyện mô hình và đánh giá mô hình.
+Checklist thủ công nằm ở `tests/manual/test_cases.md`.
 
-### `ml-service/`
-Chứa backend Python FastAPI:
+## 10. API chính
 
-- `app/main.py`: file khởi động API
-- `schemas/`: định nghĩa request/response
-- `services/`: xử lý nạp mô hình, tiền xử lý và dự đoán
-- `utils/`: tiện ích hỗ trợ như logger
-- `artifacts/`: nơi lưu model đã train
-- `tests/`: kiểm thử cho backend
+Request `POST /predict`:
 
-### `webapp/PredictTheScore.Web/`
-Chứa frontend ASP.NET Core MVC:
+```json
+{
+  "studytime": 2,
+  "failures": 0,
+  "absences": 4,
+  "schoolsup": 1,
+  "famsup": 1,
+  "internet": 1
+}
+```
 
-- `Controllers/`: xử lý request từ người dùng
-- `Models/`: mô hình dữ liệu
-- `ViewModels/`: dữ liệu trung gian giữa controller và view
-- `Services/`: lớp gọi API backend
-- `Views/`: giao diện hiển thị
-- `wwwroot/`: CSS, JavaScript, hình ảnh tĩnh
-- `Program.cs`: file cấu hình khởi động ứng dụng
+Request nâng cao có thêm `scenario`. Nếu không gửi `scenario`, API tự dùng `web_minimal`.
 
-### `database/`
-Chứa tài liệu hoặc script liên quan đến thiết kế cơ sở dữ liệu:
+`early_warning`:
 
-- `schema/`: script khởi tạo bảng
-- `seed/`: dữ liệu mẫu
-- `migrations/`: thay đổi cấu trúc CSDL
+```json
+{
+  "scenario": "early_warning",
+  "subject": "mat",
+  "studytime": 2,
+  "failures": 0,
+  "absences": 4,
+  "schoolsup": 1,
+  "famsup": 1,
+  "internet": 1,
+  "higher": 1,
+  "traveltime": 2
+}
+```
 
-### `tests/`
-Chứa các tài liệu và kịch bản kiểm thử tích hợp, kiểm thử thủ công.
+`reference`:
 
-### `reports/`
-Chứa hình ảnh, bảng biểu và tài liệu phục vụ báo cáo, slide và minh họa kết quả.
+```json
+{
+  "scenario": "reference",
+  "subject": "mat",
+  "studytime": 2,
+  "failures": 0,
+  "absences": 4,
+  "G1": 12,
+  "G2": 13,
+  "schoolsup": 1,
+  "famsup": 1,
+  "internet": 1,
+  "higher": 1,
+  "traveltime": 2
+}
+```
 
----
+Response:
 
-## Quy trình chạy hệ thống
+```json
+{
+  "predicted_score": 12.8,
+  "predicted_score_20": 12.8,
+  "predicted_score_10": 6.4,
+  "model_name": "LinearRegression-web_minimal",
+  "scenario": "web_minimal",
+  "model_scenario": "web_minimal",
+  "message": "Dự đoán thành công."
+}
+```
 
-1. Chạy backend FastAPI.
-2. Kiểm tra backend hoạt động qua `/docs`.
-3. Chạy frontend ASP.NET Core MVC.
-4. Truy cập giao diện web.
-5. Nhập dữ liệu đầu vào.
-6. Frontend gửi dữ liệu sang backend để dự đoán.
-7. Backend trả kết quả dự đoán về frontend để hiển thị.
+## 11. Phần mở rộng: lựa chọn kịch bản dự đoán
 
----
+Ứng dụng hỗ trợ 3 kịch bản:
 
-## Ghi chú
+| Scenario | Tên trên giao diện | Field cần nhập | Ghi chú |
+| --- | --- | --- | --- |
+| `web_minimal` | Dự đoán nhanh | 6 field hiện tại | Mặc định, đơn giản nhất |
+| `early_warning` | Cảnh báo sớm | 6 field + `subject`, `higher`, `traveltime` | Hướng nâng cấp khuyến nghị vì chỉ thêm 3 field |
+| `reference` | Tham chiếu có điểm G1/G2 | 6 field + `subject`, `higher`, `traveltime`, `G1`, `G2` | Có nhiều thông tin hơn nhưng cần biết điểm quá trình |
 
-- Nếu backend chưa chạy, frontend sẽ không lấy được kết quả dự đoán.
-- Nếu thay đổi schema request/response bên backend, cần cập nhật lại phần gọi API bên frontend.
-- Các file model sau khi train nên lưu trong thư mục `ml-service/artifacts/`.
+Frontend mặc định ẩn phần nâng cao. Bấm **Nâng cấp mô hình dự đoán** để chọn scenario và hiển thị field tương ứng.
 
----
+## 12. Xử lý lỗi thường gặp
 
-## Trạng thái hiện tại
+| Lỗi | Nguyên nhân | Cách xử lý |
+| --- | --- | --- |
+| `cd: ml-service: No such file or directory` | Đang đứng sai thư mục hoặc đã ở trong `ml-service` | Chạy `ls`/`pwd`, quay về project root trước |
+| `Python was not found` | Python chưa cài hoặc PATH sai | Cài Python từ python.org, tick Add python.exe to PATH, tắt Store alias nếu cần |
+| `bash: ..venvScriptsactivate: command not found` | Dùng cú pháp PowerShell trong Git Bash | Dùng `source .venv/Scripts/activate` |
+| `source ml-service/.venv/Scripts/activate: No such file or directory` | Chưa tạo `.venv` hoặc đang sai thư mục | Tạo lại venv từ project root |
+| `No module named uvicorn` | Chưa activate venv hoặc chưa cài requirements | Activate venv và chạy `python -m pip install -r ml-service/requirements.txt` |
+| Docker engine unavailable | Docker Desktop chưa chạy | Mở Docker Desktop và đợi ready |
 
-Dự án đang được xây dựng theo lộ trình:
+### `bash: cd: ml-service: No such file or directory`
 
-- hoàn thiện backend dự đoán
-- hoàn thiện frontend nhập liệu và hiển thị kết quả
-- tích hợp hai hệ thống
-- kiểm thử và đóng gói báo cáo
+Bạn đang không ở thư mục gốc project hoặc đã đang ở trong `ml-service`.
+
+Kiểm tra:
+
+```bash
+pwd
+ls
+```
+
+Nếu `ls` không thấy `ml-service`, hãy `cd` về đúng thư mục chứa project.
+
+### `bash: ..venvScriptsactivate: command not found`
+
+Bạn đang dùng sai cú pháp activate trong Git Bash. Dùng:
+
+```bash
+source .venv/Scripts/activate
+```
+
+nếu đang ở `ml-service`, hoặc:
+
+```bash
+source ml-service/.venv/Scripts/activate
+```
+
+nếu đang ở thư mục gốc project.
+
+### `source ml-service/.venv/Scripts/activate: No such file or directory`
+
+Có hai khả năng:
+
+- Bạn chưa tạo `.venv`.
+- Bạn đang không ở thư mục gốc project.
+
+Cách sửa từ thư mục gốc:
+
+```bash
+cd ml-service
+py -m venv .venv
+source .venv/Scripts/activate
+python -m pip install -r requirements.txt
+cd ..
+```
+
+### `Python was not found`
+
+Python chưa được cài hoặc chưa được thêm vào PATH. Cài Python từ `python.org`, chọn **Add python.exe to PATH**, rồi mở terminal mới.
+
+### `ModuleNotFoundError`
+
+Bạn chưa activate `.venv` hoặc chưa cài requirements.
+
+Từ thư mục gốc:
+
+```bash
+source ml-service/.venv/Scripts/activate
+python -m pip install -r ml-service/requirements.txt
+```
+
+Với PowerShell:
+
+```powershell
+.\ml-service\.venv\Scripts\Activate.ps1
+python -m pip install -r ml-service\requirements.txt
+```
+
+## 13. Ghi chú báo cáo
+
+- Model chính của app là `LinearRegression` với scenario `web_minimal` vì khớp 6 trường đang có trên form web.
+- Scenario `early_warning` là hướng nâng cấp hợp lý vì chỉ thêm `subject`, `higher`, `traveltime`.
+- Scenario `reference` có độ chính xác cao hơn vì dùng thêm `G1`, `G2`, nhưng cần biết điểm quá trình.
+- Các mục cần nhóm tự bổ sung trước khi nộp: tên thành viên thật, ảnh screenshot demo, slide PowerPoint và link commit minh chứng.
